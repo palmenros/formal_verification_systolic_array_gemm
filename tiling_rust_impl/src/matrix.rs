@@ -19,9 +19,9 @@ impl Number for u64 {}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Matrix<T: Number> {
-    rows: usize,
-    cols: usize,
-    data: Vec<Vec<T>>,
+    pub rows: usize,
+    pub cols: usize,
+    pub data: Vec<Vec<T>>,
 }
 
 #[derive(Debug)]
@@ -33,8 +33,8 @@ pub enum MatrixError {
 // A structure that represents a matrix split into different tilees, each of size tile_size x tile_size
 #[derive(Debug)]
 pub struct TiledMatrix<T: Number> {
-    tiles: Vec<Vec<Matrix<T>>>,
-    tile_size: usize,
+    pub tiles: Vec<Vec<Matrix<T>>>,
+    pub tile_size: usize,
 }
 
 impl<T: Number> Matrix<T> {
