@@ -1,63 +1,58 @@
-import TicSAT_pkg::*;
+import GEMM_pkg::*;
 
-module TicSAT #(
+module GEMM #(
     parameter SA_SIZE = 4,
 
     // This module uses INT-N weights weights and activations
     parameter WEIGHT_ACTIVATION_SIZE = 8
-
 ) (
     input logic resetn,
     input logic clk,
 
-    // Used to load both weights and activations, depending on cmd
-    input logic[WEIGHT_ACTIVATION_SIZE-1:0] in_val,
+    // All weights are loaded at once when cmd = CMD_WRITE_WEIGHTS
+    input logic[WEIGHT_ACTIVATION_SIZE-1:0] weight_inputs[SA_SIZE][SA_SIZE],
 
-    // Used to select in which FIFO position to write the input and read the output
-    input logic[$clog2(SA_SIZE)-1:0] in_idx,
-
-    output logic[WEIGHT_ACTIVATION_SIZE-1:0] out,
+    input logic[WEIGHT_ACTIVATION_SIZE-1:0] activation_inputs[SA_SIZE],
+    output logic[WEIGHT_ACTIVATION_SIZE-1:0] activation_outputs[SA_SIZE],
 
     input command_t cmd
 );
 
-logic[WEIGHT_ACTIVATION_SIZE-1:0] systolic_array_inputs[SA_SIZE-1:0];
-logic[WEIGHT_ACTIVATION_SIZE-1:0] systolic_array_outputs[SA_SIZE-1:0];
+logic[WEIGHT_ACTIVATION_SIZE-1:0] systolic_array_inputs[SA_SIZE];
+logic[WEIGHT_ACTIVATION_SIZE-1:0] systolic_array_outputs[SA_SIZE];
 
-SA_FP32 #(
+SA #(
     .SA_SIZE            (SA_SIZE),
     .WEIGHT_SIZE        (WEIGHT_ACTIVATION_SIZE),
     .ACTIVATION_SIZE    (WEIGHT_ACTIVATION_SIZE)
-) u_SA_FP32 (
+) u_SA (
     .resetn             (resetn),
     .clk                (clk),
-    .weight_input       (in_val),
+    .weight_inputs      (weight_inputs),
     .inputs             (systolic_array_inputs),
     .outputs            (systolic_array_outputs),
     .cmd                (cmd)
 );
 
-FIFO_in #(
+Delay_Skew_In #(
     .SA_SIZE            (SA_SIZE),
     .ACTIVATION_SIZE    (WEIGHT_ACTIVATION_SIZE)
-) u_FIFO_in (
+) u_Delay_Skew_In (
     .resetn             (resetn),
     .clk                (clk),
-    .in                 (in_val),
-    .in_row_idx         (in_idx),
+    .in                 (activation_inputs),
     .outputs            (systolic_array_inputs),
     .cmd                (cmd)
 );
 
-FIFO_out #(
+Delay_Skew_Out #(
     .SA_SIZE            (SA_SIZE),
     .ACTIVATION_SIZE    (WEIGHT_ACTIVATION_SIZE)
-) u_FIFO_out (
+) u_Delay_Skew_Out (
     .resetn             (resetn),
     .clk                (clk),
     .inputs             (systolic_array_outputs),
-    .in_row_idx         (in_idx),
-    .out                (out),
+    .out                (activation_outputs),
     .cmd                (cmd)
 );
 

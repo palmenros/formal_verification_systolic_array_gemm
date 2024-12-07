@@ -1,0 +1,26 @@
+Vivado Simulator v2022.2
+Copyright 1986-1999, 2001-2022 Xilinx, Inc. All Rights Reserved.
+Running: /opt/Xilinx/Vivado/2022.2/bin/unwrapped/lnx64.o/xelab --incr --debug typical --relax --mt 8 -L xil_defaultlib -L uvm -L unisims_ver -L unimacro_ver -L secureip --snapshot tb_GEMM_behav xil_defaultlib.tb_GEMM xil_defaultlib.glbl -log elaborate.log 
+Using 8 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+WARNING: [VRFC 10-3597] non-void function 'randomize' called as a task without void casting [/home/pedro/dev/formal_verification_project/systolic_array/TB/tb_GEMM.sv:199]
+WARNING: [VRFC 10-3597] non-void function 'randomize' called as a task without void casting [/home/pedro/dev/formal_verification_project/systolic_array/TB/tb_GEMM.sv:200]
+Completed static elaboration
+Starting simulation data flow analysis
+WARNING: [XSIM 43-4100] "/home/pedro/dev/formal_verification_project/systolic_array/TB/tb_GEMM.sv" Line 5. Module tb_GEMM has a timescale but at least one module in design doesn't have timescale.
+WARNING: [XSIM 43-4100] "/home/pedro/dev/formal_verification_project/systolic_array/TB/tb_GEMM.sv" Line 5. Module tb_GEMM has a timescale but at least one module in design doesn't have timescale.
+WARNING: [XSIM 43-4100] "/home/pedro/dev/formal_verification_project/systolic_array/VivadoProject/VivadoProject.sim/sim_1/behav/xsim/glbl.v" Line 6. Module glbl has a timescale but at least one module in design doesn't have timescale.
+WARNING: [XSIM 43-4100] "/home/pedro/dev/formal_verification_project/systolic_array/VivadoProject/VivadoProject.sim/sim_1/behav/xsim/glbl.v" Line 6. Module glbl has a timescale but at least one module in design doesn't have timescale.
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling package xil_defaultlib.GEMM_pkg
+Compiling package std.std
+Compiling module xil_defaultlib.PE
+Compiling module xil_defaultlib.SA(SA_SIZE=4)
+Compiling module xil_defaultlib.Delay_Skew_In(SA_SIZE=4,ACTIVATI...
+Compiling module xil_defaultlib.Delay_Skew_Out(SA_SIZE=4,ACTIVAT...
+Compiling module xil_defaultlib.GEMM
+Compiling module xil_defaultlib.tb_GEMM
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot tb_GEMM_behav

@@ -1,0 +1,15 @@
+# compile verilog/system verilog design source files
+sv xil_defaultlib  \
+"../../../../../RTL/GEMM_pkg.sv" \
+"../../../../../RTL/Delay_Skew_In.sv" \
+"../../../../../RTL/Delay_Skew_Out.sv" \
+"../../../../../RTL/GEMM.sv" \
+"../../../../../RTL/PE.sv" \
+"../../../../../RTL/SA.sv" \
+"../../../../../TB/tb_GEMM.sv" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

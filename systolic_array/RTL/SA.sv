@@ -1,6 +1,6 @@
-import TicSAT_pkg::*;
+import GEMM_pkg::*;
 
-module SA_FP32 #(
+module SA #(
     parameter SA_SIZE = 8,
 
 
@@ -8,34 +8,30 @@ module SA_FP32 #(
     parameter WEIGHT_SIZE = 8,
     parameter ACTIVATION_SIZE = 8
 ) (
-    //
     input logic resetn,
     input logic clk,
 
-    // Weight loading is done in a delay-line fashion.
-    // Weights are input in the systolic array in reverse order. 
-    // On cmd==CMD_WRITE_WEIGHTS, the weights are shifted to the right (and to the-bottom if it's the last row), and input_weight is loaded into the first weight. 
-    // In order to load all the weights, load the last weight, then the second-to-last, and so on.
-    input logic[WEIGHT_SIZE-1:0] weight_input,
-    
-    input logic[ACTIVATION_SIZE-1:0] inputs[SA_SIZE-1:0],
-    output logic[ACTIVATION_SIZE-1:0] outputs[SA_SIZE-1:0],
+    // All weights are loaded at once when cmd = CMD_WRITE_WEIGHTS
+    input logic[WEIGHT_SIZE-1:0] weight_inputs[SA_SIZE][SA_SIZE],
+
+    input logic[ACTIVATION_SIZE-1:0] inputs[SA_SIZE],
+    output logic[ACTIVATION_SIZE-1:0] outputs[SA_SIZE],
 
     input command_t cmd
 );
-    // Weights for each processing element. 
+    // Weights for each processing element.
     //    Access as weights_reg[r][c]
-    logic[WEIGHT_SIZE-1:0] weights_reg[SA_SIZE-1:0][SA_SIZE-1:0];
+    logic[WEIGHT_SIZE-1:0] weights_reg[SA_SIZE][SA_SIZE];
 
     // Accumulator registers storing the output of each PE.
     // Note that there are only SA_SIZE-1 rows of accumulators, as the first accumulator (input to first PE) is always 0.
     //    Access as accs_reg[r][c]
-    logic[ACTIVATION_SIZE-1:0] accs_reg[SA_SIZE-2:0][SA_SIZE-1:0];
+    logic[ACTIVATION_SIZE-1:0] accs_reg[SA_SIZE-1][SA_SIZE];
 
     // Registers that hold the input of each PE (which is passed to the right).
     // Note that there are only SA_SIZE-1 rows of input registers, as the input to the first PE comes from the SA module input inputs.
     //    Access as pe_inputs_reg[r][c]
-    logic[ACTIVATION_SIZE-1:0] pe_inputs_reg[SA_SIZE-1:0][SA_SIZE-2:0];
+    logic[ACTIVATION_SIZE-1:0] pe_inputs_reg[SA_SIZE][SA_SIZE-1];
 
     // The computation should only be advanced if the command is CMD_STREAM
     logic should_advance_computation;
@@ -49,8 +45,8 @@ module SA_FP32 #(
     genvar r, c;
     generate
         for (r = 0; r < SA_SIZE; r = r + 1) begin: R_GEN
-            for (c = 0; c < SA_SIZE; c = c + 1) begin: C_GEN                
-                
+            for (c = 0; c < SA_SIZE; c = c + 1) begin: C_GEN
+
                 // PE INPUT
                 logic[ACTIVATION_SIZE-1:0] pe_in;
 
@@ -75,14 +71,14 @@ module SA_FP32 #(
 
                 // PE ACCUMULATOR
                 logic[ACTIVATION_SIZE-1:0] pe_acc;
-                
+
                 // If this is the first row, the accumulator is 0
                 // Otherwise, the accumulator is the output of the PE above
                 assign pe_acc = (r == 0) ? '0 : accs_reg[r-1][c];
-                
+
                 // PE OUTPUT
                 logic[ACTIVATION_SIZE-1:0] pe_out;
-                
+
                 // If this is the last row, then the output of the accumulator is the output of the SA module
                 if (r == SA_SIZE-1) begin
                     assign outputs[c] = pe_out;
@@ -122,22 +118,13 @@ module SA_FP32 #(
                         weights_reg[r][c] <= '0;
                     end else begin
                         weights_reg[r][c] <= weights_reg[r][c];
-
-                        // If cmd is CMD_WRITE_WEIGHTS, then shift the weights to the right (and possible to the bottom),
-                        //  and load weight_input into the first weight register
+                        // If cmd is CMD_WRITE_WEIGHTS, then load all weights
                         if (cmd == CMD_WRITE_WEIGHTS) begin
-                            if (r == 0 && c == 0) begin
-                                weights_reg[r][c] <= weight_input;
-                            end else begin
-                                if (c == 0) begin
-                                    weights_reg[r][c] <= weights_reg[r-1][SA_SIZE-1];
-                                end else begin
-                                    weights_reg[r][c] <= weights_reg[r][c-1];
-                                end
-                            end
+                            weights_reg[r][c] <= weight_inputs[r][c];
                         end
                     end
                 end
+
             end
         end
     endgenerate
