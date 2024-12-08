@@ -1,13 +1,21 @@
 import GEMM_pkg::*;
 
 module FV_GEMM #(
-    parameter SA_SIZE = 4,
-    parameter INPUT_SIZE = 5,
+    parameter SA_SIZE = 2,
+    parameter INPUT_SIZE = 2,
     parameter WEIGHT_ACTIVATION_SIZE = 8
 ) (
-    input logic resetn,
-    input logic clk
+    input logic clk,
+    input logic resetn
 );
+
+`ifdef FORMAL
+
+// Default clocking and reset for all properties
+default clocking cb @(posedge clk); endclocking
+default disable iff (!resetn);
+
+`endif
 
 //////////////////////////////////////////////////////////////////////////
 //  GEMM module instantiation
@@ -43,8 +51,8 @@ GEMM #(
 // Non-initialized variables that will be fed into the GEMM and reference model.
 // As they are non initialized, the FV tools will prove that the properties
 //  hold for every possible value.
-logic [WEIGHT_ACTIVATION_SIZE-1:0] weights[SA_SIZE][SA_SIZE];
-logic [WEIGHT_ACTIVATION_SIZE-1:0] inputs[INPUT_SIZE][SA_SIZE];
+(* anyconst *) logic [WEIGHT_ACTIVATION_SIZE-1:0] weights[SA_SIZE][SA_SIZE];
+(* anyconst *) logic [WEIGHT_ACTIVATION_SIZE-1:0] inputs[INPUT_SIZE][SA_SIZE];
 
 
 assign weight_inputs = weights;
@@ -96,9 +104,8 @@ always_ff @(posedge clk) begin
 
             if (output_row_idx == INPUT_SIZE - 1) begin
                 all_outputs_stored <= 1'b1;
-            end else begin
-                output_row_idx <= output_row_idx + 1;
-            end;
+            end
+            output_row_idx <= output_row_idx + 1;
         end
     end
 end
@@ -140,8 +147,11 @@ always_comb begin
     activation_inputs = '{default: '0};
 
     if (state == S_STREAM_INPUTS) begin
-        assert (input_row_idx < INPUT_SIZE);
-        activation_inputs = inputs[input_row_idx];
+        assert property (input_row_idx < INPUT_SIZE);
+
+        for(int c = 0; c < SA_SIZE; ++c) begin
+            activation_inputs[c] = inputs[input_row_idx][c];
+        end
     end
 end
 
@@ -191,7 +201,86 @@ end
 
 `ifdef FORMAL
 
-// TODO: Define some formal properties
+// Assume that we always start at reset
+initial assume(!resetn);
+
+///////////////////////////////////////////////
+//  COVER PROPERTIES
+///////////////////////////////////////////////
+
+// Go through all states of the driver state machine
+cover property (
+    state == S_INITIAL ##1 state == S_LOAD_WEIGHTS ##1
+    state == S_STREAM_INPUTS ##[1:INPUT_SIZE]
+    state == S_STREAM_UNTIL_ALL_OUTPUTS_RECEIVED ##[1:$]
+    state == S_DONE);
+
+// Go through some non-zero interesting inputs
+cover property (
+    weights[0][0] == 1 && weights[0][1] == 2 && //weights[0][2] == 1 && weights[0][3] == 2 &&
+    weights[1][0] == 3 && weights[1][1] == 1 && //weights[1][2] == 3 && weights[1][3] == 1 &&
+    // weights[2][0] == 1 && weights[2][1] == 4 && weights[2][2] == 1 && weights[2][3] == 4 &&
+    // weights[3][0] == 5 && weights[3][1] == 1 && weights[3][2] == 5 && weights[3][3] == 1 &&
+
+    inputs[0][0] == 1 && inputs[0][1] == 2 && //inputs[0][2] == 3 && inputs[0][3] == 4 &&
+    inputs[1][0] == 5 && inputs[1][1] == 6 && //inputs[1][2] == 7 && inputs[1][3] == 8 &&
+    // inputs[2][0] == 9 && inputs[2][1] == 10 && inputs[2][2] == 11 && inputs[2][3] == 12 &&
+    // inputs[3][0] == 13 && inputs[3][1] == 14 && inputs[3][2] == 15 && inputs[3][3] == 16 &&
+    // inputs[4][0] == 17 && inputs[4][1] == 18 && inputs[4][2] == 19 && inputs[4][3] == 20 &&
+
+    all_outputs_stored
+);
+
+// Cover property stating the final outputs, the tool will figure out
+//   two matrices that multiply to that value
+cover property (
+    actual_sa_outputs[0][0] == 3 && actual_sa_outputs[0][1] == 2 && actual_sa_outputs[0][2] == 1 && actual_sa_outputs[0][3] == 0 &&
+    actual_sa_outputs[1][0] == 5 && actual_sa_outputs[1][1] == 6 && actual_sa_outputs[1][2] == 7 && actual_sa_outputs[1][3] == 9 &&
+    all_outputs_stored
+);
+
+///////////////////////////////////////////////
+//  SYSTOLIC ARRAY ASSERTIONS
+///////////////////////////////////////////////
+
+// Systolic array activation outputs match when streamed out of the systolic array
+// TODO: This property is extremely slow to check. Try to make it faster through intermediate assumptions.
+// NOTE: After trying autotune, some of the engines that work best are:
+// smtbmc bitwuzla
+// smtbmc boolector
+// smtbmc --nopresat boolector
+logic match;
+always_comb begin
+    match = 1'b1;
+    for (int i = 0; i < SA_SIZE; i++) begin
+        match = match && (activation_outputs[i] == reference_outputs[output_row_idx][i]);
+    end
+end
+
+property streaming_outputs_match;
+    (output_valid && output_row_idx < INPUT_SIZE) |-> match;
+endproperty
+assert property(streaming_outputs_match);
+
+// Actual output should be equal to reference output after everything is finished
+// TODO: This property takes too long for my laptop to prove. That's why I've commented it out.
+// always_comb begin
+//     if (resetn && all_outputs_stored) begin
+//         for (int i = 0; i < INPUT_SIZE; i++) begin
+//             for (int j = 0; j < SA_SIZE; j++) begin
+//                 assert (actual_sa_outputs[i][j] == reference_outputs[i][j]) else
+//                     $error("Output mismatch at [%0d][%0d]: actual=%0d, expected=%0d",
+//                            i, j, actual_sa_outputs[i][j], reference_outputs[i][j]);
+//             end
+//         end
+//     end
+// end
+
+// TODO: Add liveness property about systolic array finishing
+
+
+// TODO: Define more formal properties
+
 
 `endif
 
