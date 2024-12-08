@@ -105,6 +105,7 @@ end
 
 logic[ACTIVATION_SIZE-1:0] in[SA_SIZE];
 logic[ACTIVATION_SIZE-1:0] out[SA_SIZE];
+logic output_valid;
 
 command_t cmd;
 
@@ -116,7 +117,8 @@ GEMM #(
     .weight_inputs(weights),
     .activation_inputs(in),
     .activation_outputs(out),
-    .cmd                (cmd)
+    .cmd                (cmd),
+    .output_valid (output_valid)
 );
 
 // Task to load the weights
@@ -155,6 +157,9 @@ task load_input;
         for (int c = 0; c < SA_SIZE; c = c + 1) begin
             if (r >= FIRST_OUTPUT_CYCLE) begin
                 output_matrix[r-FIRST_OUTPUT_CYCLE][c] = out[c];
+                assert (output_valid == 1'b1);
+            end else begin
+                assert (output_valid == 1'b0);
             end
         end
 
@@ -183,6 +188,9 @@ task flush_outputs;
         for (int c = 0; c < SA_SIZE; c = c + 1) begin
             if (r >= FIRST_OUTPUT_CYCLE) begin
                 output_matrix[r-FIRST_OUTPUT_CYCLE][c] = out[c];
+                assert (output_valid == 1'b1);
+            end else begin
+                assert (output_valid == 1'b0);
             end
         end
 

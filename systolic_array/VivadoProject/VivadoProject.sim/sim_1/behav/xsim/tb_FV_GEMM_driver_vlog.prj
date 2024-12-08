@@ -1,12 +1,14 @@
 # compile verilog/system verilog design source files
 sv xil_defaultlib  \
+"../../../../../RTL/Count_To_Maximum.sv" \
 "../../../../../RTL/GEMM_pkg.sv" \
 "../../../../../RTL/Delay_Skew_In.sv" \
 "../../../../../RTL/Delay_Skew_Out.sv" \
+"../../../../../FV/FV_GEMM_driver.sv" \
 "../../../../../RTL/GEMM.sv" \
 "../../../../../RTL/PE.sv" \
 "../../../../../RTL/SA.sv" \
-"../../../../../TB/tb_GEMM.sv" \
+"../../../../../TB/tb_FV_GEMM_driver.sv" \
 
 # compile glbl module
 verilog xil_defaultlib "glbl.v"

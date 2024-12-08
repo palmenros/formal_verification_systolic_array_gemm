@@ -1,14 +1,17 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/pedro/dev/formal_verification_project/systolic_array/RTL/Count_To_Maximum.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module Count_To_Maximum
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/pedro/dev/formal_verification_project/systolic_array/RTL/GEMM_pkg.sv" into library xil_defaultlib
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/pedro/dev/formal_verification_project/systolic_array/RTL/Delay_Skew_In.sv" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module Delay_Skew_In
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/pedro/dev/formal_verification_project/systolic_array/RTL/Delay_Skew_Out.sv" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module Delay_Skew_Out
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/pedro/dev/formal_verification_project/systolic_array/FV/FV_GEMM_driver.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module FV_GEMM
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/pedro/dev/formal_verification_project/systolic_array/RTL/GEMM.sv" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module GEMM
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/pedro/dev/formal_verification_project/systolic_array/RTL/PE.sv" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module PE
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/pedro/dev/formal_verification_project/systolic_array/RTL/SA.sv" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module SA
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/pedro/dev/formal_verification_project/systolic_array/TB/tb_GEMM.sv" into library xil_defaultlib
-INFO: [VRFC 10-311] analyzing module tb_GEMM
-WARNING: [VRFC 10-3824] variable 'NUM_TO_FLUSH' must explicitly be declared as automatic or static [/home/pedro/dev/formal_verification_project/systolic_array/TB/tb_GEMM.sv:171]
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/pedro/dev/formal_verification_project/systolic_array/TB/tb_FV_GEMM_driver.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module tb_FV_GEMM_driver

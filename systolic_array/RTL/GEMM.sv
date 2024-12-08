@@ -2,7 +2,7 @@ import GEMM_pkg::*;
 
 module GEMM #(
     parameter SA_SIZE = 4,
-
+    
     // This module uses INT-N weights weights and activations
     parameter WEIGHT_ACTIVATION_SIZE = 8
 ) (
@@ -15,7 +15,9 @@ module GEMM #(
     input logic[WEIGHT_ACTIVATION_SIZE-1:0] activation_inputs[SA_SIZE],
     output logic[WEIGHT_ACTIVATION_SIZE-1:0] activation_outputs[SA_SIZE],
 
-    input command_t cmd
+    input command_t cmd,
+
+    output logic output_valid
 );
 
 logic[WEIGHT_ACTIVATION_SIZE-1:0] systolic_array_inputs[SA_SIZE];
@@ -54,6 +56,16 @@ Delay_Skew_Out #(
     .inputs             (systolic_array_outputs),
     .out                (activation_outputs),
     .cmd                (cmd)
+);
+
+Count_To_Maximum #(
+    .MAX_COUNT(2*SA_SIZE)
+) u_Count_To_Maximum (
+    .resetn             (resetn),
+    .clk                (clk),
+    .clear              (cmd == CMD_WRITE_WEIGHTS),
+    .increment_counter  (cmd == CMD_STREAM),
+    .is_counter_at_max (output_valid)
 );
 
 endmodule

@@ -1,4 +1,7 @@
-Running: xsim.dir/tb_GEMM_behav/xsimk -simmode gui -wdb tb_GEMM_behav.wdb -simrunnum 0 -socket 41177
+Running: xsim.dir/tb_GEMM_behav/xsimk -simmode gui -wdb tb_GEMM_behav.wdb -simrunnum 0 -socket 60963
 Design successfully loaded
-Design Loading Memory Usage: 29216 KB (Peak: 29728 KB)
+Design Loading Memory Usage: 29220 KB (Peak: 29732 KB)
 Design Loading CPU Usage: 20 ms
+Simulation completed
+Simulation Memory Usage: 119928 KB (Peak: 168488 KB)
+Simulation CPU Usage: 30 ms

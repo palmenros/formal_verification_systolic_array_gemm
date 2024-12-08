@@ -1,0 +1,30 @@
+Time resolution is 1 ps
+Simulation completed!
+Weights Matrix:
+ 114  178  156  166 
+  64    5   12  178 
+ 183  169   88  247 
+ 174  101  169  102 
+
+Input Matrix:
+  14    2   93  188 
+ 103    7   34  117 
+   9  128   49  112 
+ 135   84  229  144 
+ 212   22    0   91 
+
+Reference Output Matrix:
+ 255   87  180   27 
+ 114   92    5   20 
+  41   75   68  189 
+ 177  127  252   69 
+ 194  189   75    6 
+
+Actual Output Matrix:
+ 255   87  180   27 
+ 114   92    5   20 
+  41   75   68  189 
+ 177  127  252   69 
+ 194  189   75    6 
+SUCCESS: All outputs match reference model!
+$finish called at time : 175 ns : File "/home/pedro/dev/formal_verification_project/systolic_array/TB/tb_FV_GEMM_driver.sv" Line 110
