@@ -128,6 +128,11 @@ assert property (
     (!output_valid |-> ##(2*SA_SIZE) output_valid)
 );
 
+// Once the output is valid, it should remain being valid
+assert property (
+    output_valid |-> ##1 output_valid
+);
+
 // TODO: Define more formal properties
 
 
