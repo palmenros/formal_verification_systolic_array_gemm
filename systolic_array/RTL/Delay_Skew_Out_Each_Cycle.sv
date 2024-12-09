@@ -1,6 +1,6 @@
 import GEMM_pkg::*;
 
-module Delay_Skew_Out #(
+module Delay_Skew_Out_Each_Cycle #(
     parameter SA_SIZE = 8,
     parameter ACTIVATION_SIZE = 32
 ) (
@@ -8,9 +8,7 @@ module Delay_Skew_Out #(
     input logic clk,
 
     input logic[ACTIVATION_SIZE-1:0] inputs[SA_SIZE],
-    output logic[ACTIVATION_SIZE-1:0] out[SA_SIZE],
-    
-    input logic should_advance_computation
+    output logic[ACTIVATION_SIZE-1:0] out[SA_SIZE]
 );
 
 // For each column, last_shift_reg contains the last value of the shift register
@@ -29,9 +27,7 @@ generate
             if (~resetn) begin
                 col_shift_reg[0] <= '0;
             end else begin
-                if (should_advance_computation) begin
-                    col_shift_reg[0] <= inputs[c];
-                end
+                col_shift_reg[0] <= inputs[c];
             end
         end
 
@@ -42,9 +38,7 @@ generate
                 if (~resetn) begin
                     col_shift_reg[r] <= '0;
                 end else begin
-                    if (should_advance_computation) begin
-                        col_shift_reg[r] <= col_shift_reg[r-1];
-                    end
+                    col_shift_reg[r] <= col_shift_reg[r-1];
                 end
             end
         end

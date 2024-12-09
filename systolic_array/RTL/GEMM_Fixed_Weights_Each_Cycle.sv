@@ -1,21 +1,16 @@
 import GEMM_pkg::*;
 
-module GEMM #(
+module GEMM_Fixed_Weights_Each_Cycle #(
     parameter SA_SIZE = 4,
-    
+
     // This module uses INT-N weights weights and activations
     parameter WEIGHT_ACTIVATION_SIZE = 8
 ) (
     input logic resetn,
     input logic clk,
 
-    // All weights are loaded at once when cmd = CMD_WRITE_WEIGHTS
-    input logic[WEIGHT_ACTIVATION_SIZE-1:0] weight_inputs[SA_SIZE][SA_SIZE],
-
     input logic[WEIGHT_ACTIVATION_SIZE-1:0] activation_inputs[SA_SIZE],
     output logic[WEIGHT_ACTIVATION_SIZE-1:0] activation_outputs[SA_SIZE],
-
-    input command_t cmd,
 
     output logic output_valid
 );
@@ -23,49 +18,52 @@ module GEMM #(
 logic[WEIGHT_ACTIVATION_SIZE-1:0] systolic_array_inputs[SA_SIZE];
 logic[WEIGHT_ACTIVATION_SIZE-1:0] systolic_array_outputs[SA_SIZE];
 
-SA #(
+SA_Fixed_Weights_Each_Cycle #(
     .SA_SIZE            (SA_SIZE),
     .WEIGHT_SIZE        (WEIGHT_ACTIVATION_SIZE),
     .ACTIVATION_SIZE    (WEIGHT_ACTIVATION_SIZE)
 ) u_SA (
     .resetn             (resetn),
     .clk                (clk),
-    .weight_inputs      (weight_inputs),
     .inputs             (systolic_array_inputs),
-    .outputs            (systolic_array_outputs),
-    .cmd                (cmd)
+    .outputs            (systolic_array_outputs)
 );
 
-Delay_Skew_In #(
+Delay_Skew_In_Each_Cycle #(
     .SA_SIZE            (SA_SIZE),
     .ACTIVATION_SIZE    (WEIGHT_ACTIVATION_SIZE)
 ) u_Delay_Skew_In (
     .resetn             (resetn),
     .clk                (clk),
     .in                 (activation_inputs),
-    .outputs            (systolic_array_inputs),
-    .cmd                (cmd == CMD_STREAM)
+    .outputs            (systolic_array_inputs)
 );
 
-Delay_Skew_Out #(
+Delay_Skew_Out_Each_Cycle #(
     .SA_SIZE            (SA_SIZE),
     .ACTIVATION_SIZE    (WEIGHT_ACTIVATION_SIZE)
 ) u_Delay_Skew_Out (
     .resetn             (resetn),
     .clk                (clk),
     .inputs             (systolic_array_outputs),
-    .out                (activation_outputs),
-    .cmd                (cmd == CMD_STREAM)
+    .out                (activation_outputs)
 );
 
-Count_To_Maximum #(
-    .MAX_COUNT(2*SA_SIZE)
-) u_Count_To_Maximum (
-    .resetn             (resetn),
-    .clk                (clk),
-    .clear              (cmd == CMD_WRITE_WEIGHTS),
-    .increment_counter  (cmd == CMD_STREAM),
-    .is_counter_at_max (output_valid)
-);
+logic[$clog2(2*SA_SIZE):0] counter;
+logic counter_reach_max;
+
+assign output_valid = counter_reach_max;
+
+always_ff @(posedge clk) begin
+    if (!resetn) begin
+        counter <= '0;
+        counter_reach_max <= '0;
+    end else if (counter != 2*SA_SIZE) begin
+        counter <= counter + 1'b1;
+        if (counter == 2*SA_SIZE - 1) begin
+            counter_reach_max <= 1'b1;
+        end
+    end
+end
 
 endmodule

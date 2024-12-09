@@ -1,6 +1,6 @@
 import GEMM_pkg::*;
 
-module Delay_Skew_In #(
+module Delay_Skew_In_Each_Cycle #(
     parameter SA_SIZE = 8,
     parameter ACTIVATION_SIZE = 32
 ) (
@@ -8,9 +8,7 @@ module Delay_Skew_In #(
     input logic clk,
 
     input logic[ACTIVATION_SIZE-1:0] in[SA_SIZE],
-    output logic[ACTIVATION_SIZE-1:0] outputs[SA_SIZE],
-
-    input logic should_advance_computation
+    output logic[ACTIVATION_SIZE-1:0] outputs[SA_SIZE]
 );
 
 // For each row, generate a shift register of size r+1, that is only shifted on CMD_STREAM.
@@ -25,9 +23,7 @@ generate
             if (~resetn) begin
                 row_shift_reg[0] <= '0;
             end else begin
-                if (should_advance_computation) begin
-                    row_shift_reg[0] <= in[r];
-                end
+                row_shift_reg[0] <= in[r];
             end
         end
 
@@ -38,9 +34,7 @@ generate
                 if (~resetn) begin
                     row_shift_reg[c] <= '0;
                 end else begin
-                    if (should_advance_computation) begin
-                        row_shift_reg[c] <= row_shift_reg[c-1];
-                    end
+                    row_shift_reg[c] <= row_shift_reg[c-1];
                 end
             end
         end

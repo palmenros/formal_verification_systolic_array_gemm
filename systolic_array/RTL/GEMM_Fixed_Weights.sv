@@ -9,13 +9,10 @@ module GEMM #(
     input logic resetn,
     input logic clk,
 
-    // All weights are loaded at once when cmd = CMD_WRITE_WEIGHTS
-    input logic[WEIGHT_ACTIVATION_SIZE-1:0] weight_inputs[SA_SIZE][SA_SIZE],
-
     input logic[WEIGHT_ACTIVATION_SIZE-1:0] activation_inputs[SA_SIZE],
     output logic[WEIGHT_ACTIVATION_SIZE-1:0] activation_outputs[SA_SIZE],
 
-    input command_t cmd,
+    input logic should_advance_computation,
 
     output logic output_valid
 );
@@ -23,17 +20,16 @@ module GEMM #(
 logic[WEIGHT_ACTIVATION_SIZE-1:0] systolic_array_inputs[SA_SIZE];
 logic[WEIGHT_ACTIVATION_SIZE-1:0] systolic_array_outputs[SA_SIZE];
 
-SA #(
+SA_Fixed_Weights #(
     .SA_SIZE            (SA_SIZE),
     .WEIGHT_SIZE        (WEIGHT_ACTIVATION_SIZE),
     .ACTIVATION_SIZE    (WEIGHT_ACTIVATION_SIZE)
 ) u_SA (
     .resetn             (resetn),
     .clk                (clk),
-    .weight_inputs      (weight_inputs),
     .inputs             (systolic_array_inputs),
     .outputs            (systolic_array_outputs),
-    .cmd                (cmd)
+    .should_advance_computation (should_advance_computation)
 );
 
 Delay_Skew_In #(
@@ -44,7 +40,7 @@ Delay_Skew_In #(
     .clk                (clk),
     .in                 (activation_inputs),
     .outputs            (systolic_array_inputs),
-    .cmd                (cmd == CMD_STREAM)
+    .should_advance_computation (should_advance_computation)
 );
 
 Delay_Skew_Out #(
@@ -55,7 +51,7 @@ Delay_Skew_Out #(
     .clk                (clk),
     .inputs             (systolic_array_outputs),
     .out                (activation_outputs),
-    .cmd                (cmd == CMD_STREAM)
+    .should_advance_computation (should_advance_computation)
 );
 
 Count_To_Maximum #(
@@ -63,8 +59,8 @@ Count_To_Maximum #(
 ) u_Count_To_Maximum (
     .resetn             (resetn),
     .clk                (clk),
-    .clear              (cmd == CMD_WRITE_WEIGHTS),
-    .increment_counter  (cmd == CMD_STREAM),
+    .clear              (1'b0),
+    .increment_counter  (should_advance_computation),
     .is_counter_at_max (output_valid)
 );
 
