@@ -12,8 +12,9 @@ module SA_Fixed_Weights_Each_Cycle #(
     input logic clk,
 
     input logic[ACTIVATION_SIZE-1:0] inputs[SA_SIZE],
-    output logic[ACTIVATION_SIZE-1:0] outputs[SA_SIZE]
+    output logic[ACTIVATION_SIZE-1:0] outputs[SA_SIZE],
 
+    output logic[ACTIVATION_SIZE-1:0] pe_out[SA_SIZE][SA_SIZE]
     // In this version, we assume that we advance the computation each cycle, so there's no input to control.
 );
     assign should_advance_computation = 1'b1;
@@ -68,18 +69,18 @@ module SA_Fixed_Weights_Each_Cycle #(
                 assign pe_acc = (r == 0) ? '0 : accs_reg[r-1][c];
 
                 // PE OUTPUT
-                logic[ACTIVATION_SIZE-1:0] pe_out;
+                // logic[ACTIVATION_SIZE-1:0] pe_out;
 
                 // If this is the last row, then the output of the accumulator is the output of the SA module
                 if (r == SA_SIZE-1) begin
-                    assign outputs[c] = pe_out;
+                    assign outputs[c] = pe_out[r][c];
                 end else begin
                     // Otherwise, the output of the PE is stored in accs_reg for the next row to use
                     always_ff @(posedge clk) begin
                         if (~resetn) begin
                             accs_reg[r][c] <= '0;
                         end else begin
-                            accs_reg[r][c] <= pe_out;
+                            accs_reg[r][c] <= pe_out[r][c];
                         end
                     end
                 end
@@ -93,7 +94,7 @@ module SA_Fixed_Weights_Each_Cycle #(
                     .in(pe_in),
                     .acc(pe_acc),
                     .w(weights_reg[r][c]),
-                    .out(pe_out)
+                    .out(pe_out[r][c])
                 );
 
             end

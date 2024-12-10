@@ -12,6 +12,8 @@ module GEMM_Fixed_Weights_Each_Cycle #(
     input logic[WEIGHT_ACTIVATION_SIZE-1:0] activation_inputs[SA_SIZE],
     output logic[WEIGHT_ACTIVATION_SIZE-1:0] activation_outputs[SA_SIZE],
 
+    output logic[WEIGHT_ACTIVATION_SIZE-1:0] pe_out[SA_SIZE][SA_SIZE],
+
     output logic output_valid
 );
 
@@ -26,7 +28,8 @@ SA_Fixed_Weights_Each_Cycle #(
     .resetn             (resetn),
     .clk                (clk),
     .inputs             (systolic_array_inputs),
-    .outputs            (systolic_array_outputs)
+    .outputs            (systolic_array_outputs),
+    .pe_out             (pe_out)
 );
 
 Delay_Skew_In_Each_Cycle #(

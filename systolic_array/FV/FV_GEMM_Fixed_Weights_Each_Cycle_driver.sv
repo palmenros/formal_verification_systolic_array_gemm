@@ -1,8 +1,8 @@
 import GEMM_pkg::*;
 
 module FV_GEMM_Fixed_Weights_Each_Cycle #(
-    parameter SA_SIZE = 4,
-    parameter INPUT_SIZE = 2,
+    parameter SA_SIZE = 8,
+    parameter INPUT_SIZE = 8,
     parameter WEIGHT_ACTIVATION_SIZE = 8
 ) (
     input logic clk,
@@ -25,6 +25,7 @@ default disable iff (!resetn);
 //////////////////////////////////////////////////////////////////////////
 
 logic output_valid;
+logic[WEIGHT_ACTIVATION_SIZE-1:0] pe_out[SA_SIZE][SA_SIZE];
 
 // Instantiate the GEMM module
 GEMM_Fixed_Weights_Each_Cycle #(
@@ -35,7 +36,8 @@ GEMM_Fixed_Weights_Each_Cycle #(
     .clk(clk),
     .activation_inputs(inputs),
     .activation_outputs(out),
-    .output_valid(output_valid)
+    .output_valid(output_valid),
+    .pe_out(pe_out)
 );
 
 //////////////////////////////////////////////////////////////////////////
@@ -129,7 +131,39 @@ assert property (
 );
 
 // TODO: Define more formal properties
+///////////////////////////////////////////////
+// SUBMATRIX MULTIPLICATION ASSERTIONS
+///////////////////////////////////////////////
 
+// Golden model for reference model matrix multiplication
+function automatic logic[WEIGHT_ACTIVATION_SIZE-1:0] compute_sub_element(
+    input int row,
+    input int col,
+    input int sub_size
+);
+    logic[WEIGHT_ACTIVATION_SIZE-1:0] sum;
+    sum = 0;
+    for (int k = 0; k < sub_size; k++) begin
+        sum += inputs[row][k] * weights[k][col];
+    end
+    return sum;
+endfunction
+
+// Compute submatrix products
+generate
+    for (genvar k = 1; k < SA_SIZE; k++) begin
+        for (genvar i = 0; i < k; i++) begin
+            for (genvar j = 0; j < k; j++) begin
+                // Assert submatrix products
+                initial begin
+                    assert property (
+                        @ (posedge clk) ##(k+j+i) pe_out[i][j] == compute_sub_element(i, j, k)
+                    );
+                end
+            end
+        end
+    end
+endgenerate
 
 `endif
 
