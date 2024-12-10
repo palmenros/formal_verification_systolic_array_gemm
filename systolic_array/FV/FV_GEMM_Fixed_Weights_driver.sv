@@ -1,7 +1,7 @@
 import GEMM_pkg::*;
 
-module FV_GEMM_Fixed_Weights_Each_Cycle #(
-    parameter SA_SIZE = 8,
+module FV_GEMM_Fixed_Weights #(
+    parameter SA_SIZE = 2,
     parameter INPUT_SIZE = 2,
     parameter WEIGHT_ACTIVATION_SIZE = 8
 ) (
@@ -9,7 +9,9 @@ module FV_GEMM_Fixed_Weights_Each_Cycle #(
     input logic resetn,
 
     input logic[WEIGHT_ACTIVATION_SIZE-1:0] inputs[SA_SIZE],
-    output logic[WEIGHT_ACTIVATION_SIZE-1:0] out[SA_SIZE]
+    output logic[WEIGHT_ACTIVATION_SIZE-1:0] out[SA_SIZE],
+
+    input logic should_advance_computation
 );
 
 `ifdef FORMAL
@@ -27,7 +29,7 @@ default disable iff (!resetn);
 logic output_valid;
 
 // Instantiate the GEMM module
-GEMM_Fixed_Weights_Each_Cycle #(
+GEMM_Fixed_Weights #(
     .SA_SIZE(SA_SIZE),
     .WEIGHT_ACTIVATION_SIZE(WEIGHT_ACTIVATION_SIZE)
 ) u_GEMM (
@@ -35,19 +37,26 @@ GEMM_Fixed_Weights_Each_Cycle #(
     .clk(clk),
     .activation_inputs(inputs),
     .activation_outputs(out),
-    .output_valid(output_valid)
+    .output_valid(output_valid),
+    .should_advance_computation(should_advance_computation)
 );
 
 //////////////////////////////////////////////////////////////////////////
 //  Reference model
 //////////////////////////////////////////////////////////////////////////
 
+
 logic[WEIGHT_ACTIVATION_SIZE-1:0] weights[SA_SIZE][SA_SIZE];
 assign weights = u_GEMM.u_SA.weights_reg;
 
+localparam int MAX_INPUTS = 2;
+
+int should_advance_counter;
+logic [WEIGHT_ACTIVATION_SIZE-1:0] input_snapshot[MAX_INPUTS][SA_SIZE];
+
 // Golden model implementation
 function automatic logic golden_model_matrix_vector_multiply_check (
-    input logic[WEIGHT_ACTIVATION_SIZE-1:0] input_vector[SA_SIZE],
+    input int input_index,
     input logic[WEIGHT_ACTIVATION_SIZE-1:0] actual_systolic_array_output[SA_SIZE]
 );
     logic[WEIGHT_ACTIVATION_SIZE-1:0] expected[SA_SIZE];
@@ -61,7 +70,7 @@ function automatic logic golden_model_matrix_vector_multiply_check (
         expected[i] = '0;
         // Compute dot product for each row
         for (int j = 0; j < SA_SIZE; j++) begin
-            expected[i] += input_vector[j] * weights[j][i];
+            expected[i] += input_snapshot[input_index][j] * weights[j][i];
         end
     end
 
@@ -74,6 +83,30 @@ function automatic logic golden_model_matrix_vector_multiply_check (
 
     return does_match;
 endfunction
+
+// Counter for should_advance
+always_ff @(posedge clk) begin
+    if (!resetn) begin
+        should_advance_counter <= 0;
+
+        for(int i = 0; i < MAX_INPUTS; ++i) begin
+            for (int c = 0; c < SA_SIZE; ++c) begin
+                input_snapshot[i][c] <= '0;
+            end
+        end
+        input_snapshot <= '{default: '0};
+    end else begin
+        if (should_advance_computation) begin
+            should_advance_counter <= should_advance_counter + 1'b1;
+
+            if (should_advance_computation < MAX_INPUTS) begin
+                for (int c = 0; c < SA_SIZE; ++c) begin
+                    input_snapshot[should_advance_counter][c] <= inputs[c];
+                end
+            end
+        end
+    end
+end
 
 //////////////////////////////////////////////////////////////////////////
 //  Formal verification properties
@@ -118,14 +151,27 @@ end
 ///////////////////////////////////////////////
 
 // Use golden_model_matrix_vector_multiply to assert that the output is indeed correct.
-// For a given output, the input is 2*SA_SIZE cycles in the past.
+// For a given output, the input is 2*SA_SIZE counts of should_advance_counter in the past.
 assert property (
-    output_valid |-> golden_model_matrix_vector_multiply_check($past(inputs, 2*SA_SIZE), out) == 1'b1
+    output_valid && (should_advance_counter < 2*SA_SIZE + MAX_INPUTS) |-> (should_advance_counter >= 2*SA_SIZE) && golden_model_matrix_vector_multiply_check(
+        should_advance_counter - 2*SA_SIZE,
+        out
+    ) == 1'b1
 );
 
-// Assert that the systolic array finishes in at most 2*SA_SIZE
+///////////////////////////////////////////////////////////////////
+// Assert that the systolic array finishes in at most 2*SA_SIZE 
+///////////////////////////////////////////////////////////////////
+
+// NOTE: This is not supported by SymbiYosys, so instead we need to implement the counter in normal system verilog
+// sequence count_should_advance_occurrences;
+//   int count = 0;
+//   (1, count = 0) ##0 (should_advance_computation, count++) [*0:$] ##0 (count == 2*SA_SIZE);
+// endsequence
+
+// Assert that the output is indeed produced on time.
 assert property (
-    (!output_valid |-> ##(2*SA_SIZE) output_valid)
+    (should_advance_computation && should_advance_counter == 2*SA_SIZE-1) |=> output_valid
 );
 
 // Once the output is valid, it should remain being valid

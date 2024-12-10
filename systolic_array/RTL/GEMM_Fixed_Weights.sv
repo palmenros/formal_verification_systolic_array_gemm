@@ -1,8 +1,8 @@
 import GEMM_pkg::*;
 
-module GEMM #(
+module GEMM_Fixed_Weights #(
     parameter SA_SIZE = 4,
-    
+
     // This module uses INT-N weights weights and activations
     parameter WEIGHT_ACTIVATION_SIZE = 8
 ) (

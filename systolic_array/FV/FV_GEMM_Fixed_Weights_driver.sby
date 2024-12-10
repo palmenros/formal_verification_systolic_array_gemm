@@ -1,0 +1,37 @@
+[tasks]
+prove
+cover
+bmc
+
+[options]
+prove: mode prove
+prove: depth 8
+bmc: mode bmc
+bmc: depth 8
+cover: mode cover
+cover: depth 8
+
+[engines]
+smtbmc boolector
+
+[script]
+read -verific
+read -formal GEMM_pkg.sv
+read -formal Delay_Skew_In.sv
+read -formal Delay_Skew_Out.sv
+read -formal Count_To_Maximum.sv
+read -formal PE.sv
+read -formal SA_Fixed_Weights.sv
+read -formal GEMM_Fixed_Weights.sv
+read -formal FV_GEMM_Fixed_Weights_driver.sv
+prep -top FV_GEMM_Fixed_Weights
+
+[files]
+FV_GEMM_Fixed_Weights_driver.sv
+../RTL/Delay_Skew_In.sv
+../RTL/Delay_Skew_Out.sv
+../RTL/GEMM_pkg.sv
+../RTL/GEMM_Fixed_Weights.sv
+../RTL/PE.sv
+../RTL/SA_Fixed_Weights.sv
+../RTL/Count_To_Maximum.sv
