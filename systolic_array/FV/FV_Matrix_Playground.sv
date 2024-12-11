@@ -68,6 +68,30 @@ cover property (
 );
 
 ///////////////////////////////////////////////
+//  Full linear system solver
+///////////////////////////////////////////////
+
+cover property (
+    ##1
+    $past(out[0]) == 1 && $past(out[1])  == 2 && $past(out[2]) == 3  &&
+    out[0]        == 4 &&  out[1]        == 5 && out[2]        == 6 &&
+    // O = np.array([[1, 2, 3],
+    //               [4, 5, 6]], np.uint8)
+
+    weights[0][0] == 3 && weights[0][1] == 255 && weights[0][2] == 1 &&
+    weights[1][0] == 4 && weights[1][1] == 2 && weights[1][2] == 7   &&
+    weights[2][0] == 23 && weights[2][1] == 42 && weights[2][2] == 5
+    // W = np.array([[3, 255, 1],
+    //               [4,   2, 7],
+    //               [23, 42, 5]], np.uint8)
+
+    // The computed input is is:
+
+    I=np.array([[0x4C, 0x60, 0x6B],
+                [0xB5, 0x86, 0xBB]], np.uint8)
+);
+
+///////////////////////////////////////////////
 // LU factoring
 ///////////////////////////////////////////////
 
