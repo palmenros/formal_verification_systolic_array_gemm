@@ -41,6 +41,16 @@ generate
 
         // Assign the output to the end of the shift-register
         assign outputs[r] = row_shift_reg[r];
+
+        `ifdef FORMAL
+            // Default clocking and reset for all properties
+            default clocking cb @(posedge clk); endclocking
+            default disable iff (!resetn);
+
+            assert property (
+                ##(r+1) outputs[r] == $past(in[r], r+1)
+            );
+        `endif
     end
 endgenerate;
 

@@ -44,6 +44,16 @@ generate
         end
 
         assign last_shift_reg[c] = col_shift_reg[SA_SIZE-c-1];
+
+        `ifdef FORMAL
+            // Default clocking and reset for all properties
+            default clocking cb @(posedge clk); endclocking
+            default disable iff (!resetn);
+
+            assert property (
+                ##(SA_SIZE-c) out[c] == $past(inputs[c], SA_SIZE-c)
+            );
+        `endif
     end
 endgenerate;
 
