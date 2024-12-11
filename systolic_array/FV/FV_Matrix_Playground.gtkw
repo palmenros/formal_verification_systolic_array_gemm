@@ -1,0 +1,56 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Tue Dec 10 18:01:53 2024
+[*]
+[dumpfile] "/home/pedro/dev/formal_verification_project/systolic_array/FV/symbiyosys_FV_Matrix_Playground_cover/engine_0/trace0.vcd"
+[dumpfile_mtime] "Tue Dec 10 18:00:45 2024"
+[dumpfile_size] 1796
+[savefile] "/home/pedro/dev/formal_verification_project/systolic_array/FV/FV_Matrix_Playground.gtkw"
+[timestart] 0
+[size] 1920 1153
+[pos] -101 -101
+*-2.930265 20 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 343
+[signals_width] 180
+[sst_expanded] 1
+[sst_vpaned_height] 349
+@28
+smt_clock
+@420
+smt_step
+@28
+FV_Matrix_Playground.clk
+@22
+[color] 3
+FV_Matrix_Playground.inputs<0>[7:0]
+[color] 3
+FV_Matrix_Playground.inputs<1>[7:0]
+[color] 3
+FV_Matrix_Playground.inputs<2>[7:0]
+[color] 2
+FV_Matrix_Playground.weights<0>[7:0]
+[color] 2
+FV_Matrix_Playground.weights<1>[7:0]
+[color] 2
+FV_Matrix_Playground.weights<2>[7:0]
+[color] 2
+FV_Matrix_Playground.weights<4>[7:0]
+[color] 2
+FV_Matrix_Playground.weights<5>[7:0]
+[color] 2
+FV_Matrix_Playground.weights<6>[7:0]
+[color] 2
+FV_Matrix_Playground.weights<8>[7:0]
+[color] 2
+FV_Matrix_Playground.weights<9>[7:0]
+[color] 2
+FV_Matrix_Playground.weights<a>[7:0]
+@23
+[color] 5
+FV_Matrix_Playground.out<0>[7:0]
+[color] 5
+FV_Matrix_Playground.out<1>[7:0]
+[color] 5
+FV_Matrix_Playground.out<2>[7:0]
+[pattern_trace] 1
+[pattern_trace] 0
