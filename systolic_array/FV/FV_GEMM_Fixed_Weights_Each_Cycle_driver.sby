@@ -2,6 +2,7 @@
 prove
 cover
 bmc
+live
 
 [options]
 prove: mode prove
@@ -10,9 +11,13 @@ bmc: mode bmc
 bmc: depth 20
 cover: mode cover
 cover: depth 20
+live: mode live
 
 [engines]
-smtbmc boolector
+cover: smtbmc boolector
+bmc: smtbmc boolector
+prove: smtbmc boolector
+live: aiger suprove
 
 [script]
 read -verific

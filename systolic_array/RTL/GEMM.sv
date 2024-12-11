@@ -33,7 +33,7 @@ SA #(
     .weight_inputs      (weight_inputs),
     .inputs             (systolic_array_inputs),
     .outputs            (systolic_array_outputs),
-    .cmd                (cmd)
+    .cmd (cmd)
 );
 
 Delay_Skew_In #(
@@ -44,7 +44,7 @@ Delay_Skew_In #(
     .clk                (clk),
     .in                 (activation_inputs),
     .outputs            (systolic_array_inputs),
-    .cmd                (cmd == CMD_STREAM)
+    .should_advance_computation (cmd == CMD_STREAM)
 );
 
 Delay_Skew_Out #(
@@ -55,7 +55,7 @@ Delay_Skew_Out #(
     .clk                (clk),
     .inputs             (systolic_array_outputs),
     .out                (activation_outputs),
-    .cmd                (cmd == CMD_STREAM)
+    .should_advance_computation  (cmd == CMD_STREAM)
 );
 
 Count_To_Maximum #(

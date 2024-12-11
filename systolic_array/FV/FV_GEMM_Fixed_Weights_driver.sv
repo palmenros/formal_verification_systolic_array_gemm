@@ -179,6 +179,16 @@ assert property (
     output_valid |-> ##1 output_valid
 );
 
+// Necessary liveness assumption: Assume that should_advance_computation goes up infinite times
+assume property (
+    !should_advance_computation |-> s_eventually should_advance_computation
+);
+
+// Liveness property using SVA (much slower than previously defined System Verilog assertions)
+assert property(
+    s_eventually(output_valid)
+);
+
 // TODO: Define more formal properties
 
 

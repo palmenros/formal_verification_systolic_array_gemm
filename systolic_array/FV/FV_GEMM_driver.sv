@@ -276,11 +276,12 @@ assert property(streaming_outputs_match);
 //     end
 // end
 
-// TODO: Add liveness property about systolic array finishing
-
+// Liveness property stating that all systolic array outputs are stored. Quite slow.
+assert property(
+    s_eventually(all_outputs_stored)
+);
 
 // TODO: Define more formal properties
-
 
 `endif
 

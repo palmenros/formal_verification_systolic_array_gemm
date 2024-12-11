@@ -1,7 +1,7 @@
 import GEMM_pkg::*;
 
 module FV_GEMM_Fixed_Weights_Each_Cycle #(
-    parameter SA_SIZE = 8,
+    parameter SA_SIZE = 4,
     parameter INPUT_SIZE = 2,
     parameter WEIGHT_ACTIVATION_SIZE = 8
 ) (
@@ -131,6 +131,11 @@ assert property (
 // Once the output is valid, it should remain being valid
 assert property (
     output_valid |-> ##1 output_valid
+);
+
+// Liveness property using SVA (much slower than previously defined System Verilog assertions)
+assert property(
+    s_eventually(output_valid)
 );
 
 // TODO: Define more formal properties

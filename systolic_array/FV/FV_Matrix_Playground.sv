@@ -87,8 +87,8 @@ cover property (
 
     // The computed input is is:
 
-    I=np.array([[0x4C, 0x60, 0x6B],
-                [0xB5, 0x86, 0xBB]], np.uint8)
+    // I=np.array([[0x4C, 0x60, 0x6B],
+    //             [0xB5, 0x86, 0xBB]], np.uint8)
 );
 
 ///////////////////////////////////////////////
