@@ -1,7 +1,7 @@
 import GEMM_pkg::*;
 
 module FV_GEMM_Fixed_Weights_Each_Cycle #(
-    parameter SA_SIZE = 4,
+    parameter SA_SIZE = 3,
     parameter INPUT_SIZE = 2,
     parameter WEIGHT_ACTIVATION_SIZE = 8
 ) (
