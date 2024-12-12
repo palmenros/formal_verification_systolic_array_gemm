@@ -155,11 +155,9 @@ generate
         for (genvar i = 0; i < k; i++) begin
             for (genvar j = 0; j < k; j++) begin
                 // Assert submatrix products
-                initial begin
-                    assert property (
-                        @ (posedge clk) ##(k+j+i) pe_out[i][j] == compute_sub_element(i, j, k)
-                    );
-                end
+                assert property (
+                    ##(k+j+i) pe_out[i][j] == compute_sub_element(i, j, k)
+                );
             end
         end
     end
