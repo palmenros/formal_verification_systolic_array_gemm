@@ -39,7 +39,7 @@ def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_comm
             check=True  # This will raise an exception if the command fails
         )
         success = True
-        output = process.stdout
+        output = process.stdout + process.stderr
     except subprocess.CalledProcessError as e:
         success = False
         output = e.stderr
@@ -94,5 +94,5 @@ parser.add_argument('--tag', type=str, required=True, help='Tag for the benchmar
 
 args = parser.parse_args()
 
-for size in [64]:
+for size in [2, 4, 8, 16, 32, 64, 128, 256]:
     run_single_benchmark(args.tag, INTERFACES[args.interface], args.command, size)
