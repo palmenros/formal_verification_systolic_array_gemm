@@ -79,10 +79,20 @@ def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_comm
 
 FIXED_WEIGHTS_EACH_CYCLE_INTERFACE = 'FV_GEMM_Fixed_Weights_Each_Cycle_driver'
 
-PROVE_CMD = 'prove'
+INTERFACES = ['FV_GEMM_Fixed_Weights_Each_Cycle_driver', 'FV_GEMM_Fixed_Weights_driver', 'FV_GEMM_driver']
+
+""" PROVE_CMD = 'prove'
 LIVE_CMD = 'live'
-BMC_CMD = 'bmc'
+BMC_CMD = 'bmc' """
 
 DEFAULT_TAG = 'default'
 
-run_single_benchmark(DEFAULT_TAG, FIXED_WEIGHTS_EACH_CYCLE_INTERFACE, PROVE_CMD, 3)
+parser = argparse.ArgumentParser(description='Run formal verification benchmarks.')
+parser.add_argument('--interface', type=int, required=True, help='Interface type for the benchmark')
+parser.add_argument('--command', type=str, required=True, help='Command to run for the benchmark')
+parser.add_argument('--tag', type=str, required=True, help='Tag for the benchmark run')
+
+args = parser.parse_args()
+
+for size in [64]:
+    run_single_benchmark(args.tag, INTERFACES[args.interface], args.command, size)
