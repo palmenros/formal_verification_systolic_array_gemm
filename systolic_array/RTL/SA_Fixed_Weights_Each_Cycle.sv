@@ -36,6 +36,8 @@ module SA_Fixed_Weights_Each_Cycle #(
     //                       PROCESSING ELEMENTS
     //////////////////////////////////////////////////////////////////////////
 
+    logic[ACTIVATION_SIZE-1:0] pe_outs[SA_SIZE][SA_SIZE];
+
     // Instantiate each processing element
     genvar r, c;
     generate
@@ -69,6 +71,7 @@ module SA_Fixed_Weights_Each_Cycle #(
 
                 // PE OUTPUT
                 logic[ACTIVATION_SIZE-1:0] pe_out;
+                assign pe_outs[r][c] = pe_out;
 
                 // If this is the last row, then the output of the accumulator is the output of the SA module
                 if (r == SA_SIZE-1) begin
