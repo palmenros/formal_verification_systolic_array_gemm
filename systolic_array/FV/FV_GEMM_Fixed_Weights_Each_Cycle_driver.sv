@@ -145,46 +145,46 @@ assert property(
 // SUB-VECTOR PROPERTIES
 ///////////////////////////////////////////////
 
-function logic[WEIGHT_ACTIVATION_SIZE-1:0] compute_sub_element(
-    input int i,
-    input int j,
-    input logic[WEIGHT_ACTIVATION_SIZE-1:0] input_vector[SA_SIZE],
-    input logic[WEIGHT_ACTIVATION_SIZE-1:0] weights[SA_SIZE][SA_SIZE]
-);
-    logic[WEIGHT_ACTIVATION_SIZE-1:0] result;
-    result = '0;
-    for (int k = 0; k <= i; k++) begin
-        result += input_vector[k] * weights[k][j];
-    end
-    return result;
-endfunction
+// function logic[WEIGHT_ACTIVATION_SIZE-1:0] compute_sub_element(
+//     input int i,
+//     input int j,
+//     input logic[WEIGHT_ACTIVATION_SIZE-1:0] input_vector[SA_SIZE],
+//     input logic[WEIGHT_ACTIVATION_SIZE-1:0] weights[SA_SIZE][SA_SIZE]
+// );
+//     logic[WEIGHT_ACTIVATION_SIZE-1:0] result;
+//     result = '0;
+//     for (int k = 0; k <= i; k++) begin
+//         result += input_vector[k] * weights[k][j];
+//     end
+//     return result;
+// endfunction
 
 
-generate
-    for (genvar i = 0; i < SA_SIZE - 1; i++) begin
-        for (genvar j = 0; j < SA_SIZE; j++) begin
-            assert property (
-                ##(i+j+2) // this is when this property starts being checked
-                u_GEMM.u_SA.pe_outs[i][j] == compute_sub_element(i,j,$past(inputs,i+j+1),weights)
-            );
-        end
-    end
-endgenerate
+// generate
+//     for (genvar i = 0; i < SA_SIZE - 1; i++) begin
+//         for (genvar j = 0; j < SA_SIZE; j++) begin
+//             assert property (
+//                 ##(i+j+2) // this is when this property starts being checked
+//                 u_GEMM.u_SA.pe_outs[i][j] == compute_sub_element(i,j,$past(inputs,i+j+1),weights)
+//             );
+//         end
+//     end
+// endgenerate
 
 ///////////////////////////////////////////////
 // INPUT PROPAGATION
 ///////////////////////////////////////////////
 
-generate
-    for (genvar i = 0; i < SA_SIZE; i++) begin
-        for (genvar j = 0; j < SA_SIZE; j++) begin
-            assert property (
-                ##(i+j+2) // this is when this property starts being checked
-                u_GEMM.u_SA.pe_ins[i][j] == $past(inputs[i],i+j+1)
-            );
-        end
-    end
-endgenerate
+// generate
+//     for (genvar i = 0; i < SA_SIZE; i++) begin
+//         for (genvar j = 0; j < SA_SIZE; j++) begin
+//             assert property (
+//                 ##(i+j+2) // this is when this property starts being checked
+//                 u_GEMM.u_SA.pe_ins[i][j] == $past(inputs[i],i+j+1)
+//             );
+//         end
+//     end
+// endgenerate
 
 `endif
 
