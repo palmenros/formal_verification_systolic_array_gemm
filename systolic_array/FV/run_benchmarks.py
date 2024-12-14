@@ -151,10 +151,13 @@ INTERFACES = [
     'FV_GEMM_Fixed_Weights_Each_Cycle_driver',
     'FV_GEMM_Fixed_Weights_driver',
     'FV_GEMM_driver',
-    'FV_GEMM_FWEC_driver_verif1',
-    'FV_GEMM_FWEC_driver_verif2',
-    'FV_GEMM_FWEC_driver_verif3',
     ]
+
+for f in os.listdir(os.path.dirname(os.path.realpath(__file__))):
+    if f.endswith('.sby.tpl'):
+        interface_name = f.removesuffix('.sby.tpl')
+        if interface_name not in INTERFACES:
+            INTERFACES.append(interface_name)
 
 """ PROVE_CMD = 'prove'
 LIVE_CMD = 'live'
