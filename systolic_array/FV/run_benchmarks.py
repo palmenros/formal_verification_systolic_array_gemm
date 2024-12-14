@@ -153,7 +153,7 @@ INTERFACES = [
     'FV_GEMM_driver',
     ]
 
-for f in os.listdir(os.path.dirname(os.path.realpath(__file__))):
+for f in sorted(os.listdir(os.path.dirname(os.path.realpath(__file__)))):
     if f.endswith('.sby.tpl'):
         interface_name = f.removesuffix('.sby.tpl')
         if interface_name not in INTERFACES:
