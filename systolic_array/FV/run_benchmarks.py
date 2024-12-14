@@ -59,7 +59,7 @@ def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_comm
         SA_SIZE=SA_SIZE
     )
     
-    config_name = f'gen_fv_gemm_fixed_weights_each_cycle_driver_sa_size_{SA_SIZE}_prove_depth_{PROVE_DEPTH}_bmc_depth_{BMC_DEPTH}_tag_{tag}'
+    config_name = f'gen_{interface_sby_filename_without_extension}_sa_size_{SA_SIZE}_prove_depth_{PROVE_DEPTH}_bmc_depth_{BMC_DEPTH}_tag_{tag}'
 
     RES_FILE = SCRIPT_DIR / f'{config_name}.sby'
     RES_FILE.write_text(res)
@@ -183,5 +183,5 @@ if args.help_interfaces:
 elif None in (args.interface, args.command, args.tag):
     parser.error('the following arguments are required: --interface, --command, --tag')
 
-for size in [2, 4, 8, 16, 32, 64, 128, 256]:
+for size in [2, 4, 8, 16, 32]:
     run_single_benchmark(args.tag, INTERFACES[args.interface], args.command, size, MAXIMUM_MEMORY_LIMIT_MEGABYTES)
