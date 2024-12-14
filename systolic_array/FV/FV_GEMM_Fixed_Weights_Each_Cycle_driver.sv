@@ -171,6 +171,21 @@ generate
     end
 endgenerate
 
+///////////////////////////////////////////////
+// INPUT PROPAGATION
+///////////////////////////////////////////////
+
+generate
+    for (genvar i = 0; i < SA_SIZE; i++) begin
+        for (genvar j = 0; j < SA_SIZE; j++) begin
+            assert property (
+                ##(i+j+2) // this is when this property starts being checked
+                u_GEMM.u_SA.pe_ins[i][j] == $past(inputs[i],i+j+1)
+            );
+        end
+    end
+endgenerate
+
 `endif
 
 endmodule
