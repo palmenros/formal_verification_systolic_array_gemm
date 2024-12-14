@@ -138,9 +138,6 @@ assert property(
     s_eventually(output_valid)
 );
 
-// TODO: Define more formal properties
-
-
 ///////////////////////////////////////////////
 // SUB-VECTOR PROPERTIES
 ///////////////////////////////////////////////
@@ -181,6 +178,33 @@ assert property(
 //             assert property (
 //                 ##(i+j+2) // this is when this property starts being checked
 //                 u_GEMM.u_SA.pe_ins[i][j] == $past(inputs[i],i+j+1)
+//             );
+//         end
+//     end
+// endgenerate
+
+
+///////////////////////////////////////////////
+//  UNROLLING PEs
+///////////////////////////////////////////////
+
+// generate
+//     logic[WEIGHT_ACTIVATION_SIZE-1:0] buffers[SA_SIZE-1][SA_SIZE];
+//     for (genvar i = 1; i < SA_SIZE; i++) begin
+//         for (genvar j = 0; j < SA_SIZE; j++) begin
+//             always_ff @(posedge clk) begin
+//                 if (~resetn) begin
+//                     buffers[i-1][j] <= '0;
+//                 end else if (i == 1) begin
+//                     buffers[i-1][j] <= u_GEMM.u_SA.pe_outs[i-1][j];
+//                 end else begin
+//                     buffers[i-1][j] <= u_GEMM.u_SA.pe_outs[i-1][j] + buffers[i-2][j];
+//                 end
+//             end
+//             assert property (
+//                 ##(i+j+2) // this is when this property starts being checked
+//                 // a PE output is the sum of the PE weights * inputs above it
+//                 u_GEMM.u_SA.pe_outs[i][j] == weights[i][j] * u_GEMM.u_SA.pe_ins[i][j] + buffers[i-1][j]
 //             );
 //         end
 //     end
