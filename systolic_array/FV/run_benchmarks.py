@@ -113,8 +113,10 @@ def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_comm
         print(f'ERROR: {sby_command} {config_name}' + ' (Memory limit exceeded)' if memory_limit_exceeded else '')
 
     date_time_str = time.strftime("%Y_%m_%d_%H.%M.%S")
-
-    raw_log_file = SCRIPT_DIR / 'benchmark_output' / 'raw_logs' / f'{config_name}_{date_time_str}.txt'
+    
+    raw_log_dir = SCRIPT_DIR / 'benchmark_output' / 'raw_logs'
+    os.makedirs(raw_log_dir, exist_ok=True)
+    raw_log_file = raw_log_dir / f'{config_name}_{date_time_str}.txt'
     raw_log_file.write_text(output)
 
     benchmark_data = {
@@ -132,8 +134,10 @@ def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_comm
         'interface_sby_filename': interface_sby_filename_without_extension,
         'memory_limit_exceeded': memory_limit_exceeded
     }
-
-    bench_file = SCRIPT_DIR / 'benchmark_output' / 'bench_data' / f'{config_name}_{date_time_str}.txt'
+    
+    bench_file_dir = SCRIPT_DIR / 'benchmark_output' / 'bench_data'
+    os.makedirs(bench_file_dir, exist_ok=True)
+    bench_file = bench_file_dir / f'{config_name}_{date_time_str}.txt'
     
     with open(bench_file, 'w') as f:
         json.dump(benchmark_data, f, indent=4, sort_keys=True)
@@ -143,7 +147,14 @@ def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_comm
 
 FIXED_WEIGHTS_EACH_CYCLE_INTERFACE = 'FV_GEMM_Fixed_Weights_Each_Cycle_driver'
 
-INTERFACES = ['FV_GEMM_Fixed_Weights_Each_Cycle_driver', 'FV_GEMM_Fixed_Weights_driver', 'FV_GEMM_driver']
+INTERFACES = [
+    'FV_GEMM_Fixed_Weights_Each_Cycle_driver',
+    'FV_GEMM_Fixed_Weights_driver',
+    'FV_GEMM_driver',
+    'FV_GEMM_FWEC_driver_verif1',
+    'FV_GEMM_FWEC_driver_verif2',
+    'FV_GEMM_FWEC_driver_verif3',
+    ]
 
 """ PROVE_CMD = 'prove'
 LIVE_CMD = 'live'
@@ -154,12 +165,23 @@ DEFAULT_TAG = 'default'
 # Set the memory limit to 16 GiB
 MAXIMUM_MEMORY_LIMIT_MEGABYTES = 16 * 1024
 
+command_choices = ['bmc', 'prove', 'cover', 'live']
+
 parser = argparse.ArgumentParser(description='Run formal verification benchmarks.')
-parser.add_argument('--interface', type=int, required=True, help='Interface type for the benchmark')
-parser.add_argument('--command', type=str, required=True, help='Command to run for the benchmark')
-parser.add_argument('--tag', type=str, required=True, help='Tag for the benchmark run')
+parser.add_argument('--help-interfaces', action='store_true', help='Print the available interfaces for the benchmark.')
+parser.add_argument('--interface', '-i', type=int, help='Interface type for the benchmark.')
+parser.add_argument('--command', '-c', choices=command_choices, type=str, help='Command to run for the benchmark')
+parser.add_argument('--tag', '-t', type=str, help='Tag for the benchmark run')
 
 args = parser.parse_args()
+
+if args.help_interfaces:
+    print('Available interfaces:')
+    for i, interface in enumerate(INTERFACES):
+        print(f'\t{i}: {interface}')
+    exit()
+elif None in (args.interface, args.command, args.tag):
+    parser.error('the following arguments are required: --interface, --command, --tag')
 
 for size in [2, 4, 8, 16, 32, 64, 128, 256]:
     run_single_benchmark(args.tag, INTERFACES[args.interface], args.command, size, MAXIMUM_MEMORY_LIMIT_MEGABYTES)
