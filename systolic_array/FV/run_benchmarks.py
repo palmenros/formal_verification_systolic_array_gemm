@@ -45,7 +45,7 @@ def kill_process_tree(pid):
     except (psutil.NoSuchProcess, ProcessLookupError):
         pass
 
-def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_command, SA_SIZE, maximum_memory_limit_in_megabytes):
+def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_command, SA_SIZE, maximum_memory_limit_in_megabytes, maximum_time_limit_in_seconds):
     PROVE_DEPTH = 2*(SA_SIZE + 1)
     BMC_EXPAND = 10
     BMC_DEPTH = 2*SA_SIZE + BMC_EXPAND
@@ -79,10 +79,12 @@ def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_comm
         )
 
         memory_limit_exceeded = False
+        time_limit_exceeded = False
 
         # Poll process memory usage
         while process.poll() is None:  # While process is running
             current_memory = get_process_tree_memory(process.pid)
+            current_time = time.perf_counter()
             max_memory = max(max_memory, current_memory)
             
             if current_memory > maximum_memory_limit_in_megabytes:
@@ -90,6 +92,13 @@ def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_comm
                 print(out_of_memory_message)
                 kill_process_tree(process.pid)
                 memory_limit_exceeded  = True
+
+            if current_time - start_time > maximum_time_limit_in_seconds:
+                out_of_time_message = f'Execution time exceeded {maximum_time_limit_in_seconds} seconds. Killing process...'
+                print(out_of_time_message)
+                kill_process_tree(process.pid)
+                time_limit_exceeded = True
+
             
             time.sleep(0.1)  # Poll every 100ms
                 
@@ -101,6 +110,9 @@ def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_comm
         if memory_limit_exceeded:
             output += '\n' + out_of_memory_message
 
+        if time_limit_exceeded:
+            output += '\n' + out_of_time_message
+
     except Exception as e:
         success = False
         output = str(e)
@@ -110,7 +122,7 @@ def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_comm
     if success:
         print(f'SUCCESS: {sby_command} {config_name} in {elapsed_time:.3f} seconds using {max_memory:.2f} MB')
     else:
-        print(f'ERROR: {sby_command} {config_name}' + ' (Memory limit exceeded)' if memory_limit_exceeded else '')
+        print(f'ERROR: {sby_command} {config_name}' + (' (Memory limit exceeded)' if memory_limit_exceeded else ' (Time limit exceeded)' if time_limit_exceeded else ''))
 
     date_time_str = time.strftime("%Y_%m_%d_%H.%M.%S")
     
@@ -143,9 +155,9 @@ def run_single_benchmark(tag, interface_sby_filename_without_extension, sby_comm
         json.dump(benchmark_data, f, indent=4, sort_keys=True)
 
     with open(SCRIPT_DIR / 'benchmark_output' / f'all_run_benchmarks_{interface_sby_filename_without_extension}.csv', 'a') as f:
-        f.write(f'{interface_sby_filename_without_extension},{SA_SIZE},{sby_command},{tag},{bench_file}\n')
+        f.write(f'{interface_sby_filename_without_extension},{SA_SIZE},{sby_command},{tag},{elapsed_time},{max_memory},{1 if success else 0},{bench_file}\n')
 
-FIXED_WEIGHTS_EACH_CYCLE_INTERFACE = 'FV_GEMM_Fixed_Weights_Each_Cycle_driver'
+    return success
 
 INTERFACES = [
     'FV_GEMM_Fixed_Weights_Each_Cycle_driver',
@@ -159,16 +171,14 @@ for f in sorted(os.listdir(os.path.dirname(os.path.realpath(__file__)))):
         if interface_name not in INTERFACES:
             INTERFACES.append(interface_name)
 
-""" PROVE_CMD = 'prove'
-LIVE_CMD = 'live'
-BMC_CMD = 'bmc' """
 
 DEFAULT_TAG = 'default'
 
 # Set the memory limit to 16 GiB
-MAXIMUM_MEMORY_LIMIT_MEGABYTES = 16 * 1024
+MAXIMUM_MEMORY_LIMIT_MEGABYTES = 32 * 1024
+MAXIMUM_TIME_LIMIT_SECONDS = 120 * 60
 
-command_choices = ['bmc', 'prove', 'cover', 'live']
+command_choices = ['bmc', 'prove', 'live']
 
 parser = argparse.ArgumentParser(description='Run formal verification benchmarks.')
 parser.add_argument('--help-interfaces', action='store_true', help='Print the available interfaces for the benchmark.')
@@ -186,5 +196,10 @@ if args.help_interfaces:
 elif None in (args.interface, args.command, args.tag):
     parser.error('the following arguments are required: --interface, --command, --tag')
 
-for size in [2, 4, 8, 16, 32]:
-    run_single_benchmark(args.tag, INTERFACES[args.interface], args.command, size, MAXIMUM_MEMORY_LIMIT_MEGABYTES)
+INTERFACES = ['FV_GEMM_FWEC_driver_verif1', 'FV_GEMM_FWEC_driver_verif2', 'FV_GEMM_FWEC_driver_verif3', 'FV_GEMM_FWEC_driver_verif4']
+
+for interface in INTERFACES:
+    for command in command_choices:
+        for size in [2, 4, 8, 12, 16, 24, 32]:
+            if run_single_benchmark(args.tag, interface, command, size, MAXIMUM_MEMORY_LIMIT_MEGABYTES, MAXIMUM_TIME_LIMIT_SECONDS) == False:
+                break
