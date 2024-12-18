@@ -198,6 +198,8 @@ elif None in (args.interface, args.command, args.tag):
 
 INTERFACES = ['FV_GEMM_FWEC_driver_verif1', 'FV_GEMM_FWEC_driver_verif2', 'FV_GEMM_FWEC_driver_verif3', 'FV_GEMM_FWEC_driver_verif4']
 
+INTERFACES = ['FV_GEMM_Fixed_Weights_driver', 'FV_GEMM_driver']
+
 for interface in INTERFACES:
     for command in command_choices:
         for size in [2, 4, 8, 12, 16, 24, 32]:
