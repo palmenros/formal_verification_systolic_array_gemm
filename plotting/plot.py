@@ -18,6 +18,8 @@ plt.rcParams.update({
     'figure.titlesize': 16
 })
 
+DOUBLE_PLOT_FIG_SIZE = (8, 4.5)
+
 @dataclass
 class Config:
     full_config_name: str
@@ -186,6 +188,7 @@ def plot_bmc_prove_mode_comparison(results: [BenchResults], output_path: Path = 
     """
     Creates a side-by-side comparison of BMC vs prove performance metrics.
     Shows both memory usage and CPU time for successful results only.
+    Uses different colors to distinguish BMC and prove modes.
 
     Args:
         results: List of BenchResults objects
@@ -202,28 +205,27 @@ def plot_bmc_prove_mode_comparison(results: [BenchResults], output_path: Path = 
         return
 
     # Create figure with two subplots side by side
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 5))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=DOUBLE_PLOT_FIG_SIZE)
 
-    # Colors for consistent styling
-    time_color = '#1f77b4'  # Blue
-    memory_color = '#ff7f0e'  # Orange
+    # Colors for BMC and prove modes
+    bmc_color = '#1f77b4'    # Blue
+    prove_color = '#ff7f0e'  # Orange
 
     # --- CPU Time Comparison (Left Plot) ---
     ax1.set_title('CPU Time')
     ax1.set_xlabel('Systolic Array Size')
     ax1.set_ylabel('CPU Time (minutes)')
 
-    # Plot BMC time
+    # Plot BMC and prove times with different colors
     bmc_sizes = [r.sa_size for r in bmc_results]
     bmc_times = [r.time_seconds / 60.0 for r in bmc_results]
-    ax1.plot(bmc_sizes, bmc_times, color=time_color, marker='o',
+    ax1.plot(bmc_sizes, bmc_times, color=bmc_color, marker='o',
              label='BMC', linestyle='-')
 
-    # Plot prove time
     prove_sizes = [r.sa_size for r in prove_results]
     prove_times = [r.time_seconds / 60.0 for r in prove_results]
-    ax1.plot(prove_sizes, prove_times, color=time_color, marker='s',
-             label='Prove', linestyle='--')
+    ax1.plot(prove_sizes, prove_times, color=prove_color, marker='s',
+             label='Prove', linestyle='-')
 
     ax1.grid(True, alpha=0.3)
     ax1.legend()
@@ -233,21 +235,21 @@ def plot_bmc_prove_mode_comparison(results: [BenchResults], output_path: Path = 
     ax2.set_xlabel('Systolic Array Size')
     ax2.set_ylabel('Memory Usage (GB)')
 
-    # Plot BMC memory
+    # Plot BMC and prove memory with same colors as corresponding time plots
     bmc_memory = [r.memory_megabytes / 1024.0 for r in bmc_results]
-    ax2.plot(bmc_sizes, bmc_memory, color=memory_color, marker='o',
+    ax2.plot(bmc_sizes, bmc_memory, color=bmc_color, marker='o',
              label='BMC', linestyle='-')
 
-    # Plot prove memory
     prove_memory = [r.memory_megabytes / 1024.0 for r in prove_results]
-    ax2.plot(prove_sizes, prove_memory, color=memory_color, marker='s',
-             label='Prove', linestyle='--')
+    ax2.plot(prove_sizes, prove_memory, color=prove_color, marker='s',
+             label='Prove', linestyle='-')
 
     ax2.grid(True, alpha=0.3)
     ax2.legend()
 
     # Add overall title
-    fig.suptitle(f'BMC vs Prove Performance Comparison for {results[0].config.short_name}', weight='bold')
+    fig.suptitle(f'BMC vs Prove Performance Comparison for {results[0].config.short_name}',
+                 weight='bold')
 
     # Adjust layout
     plt.tight_layout()
@@ -258,7 +260,6 @@ def plot_bmc_prove_mode_comparison(results: [BenchResults], output_path: Path = 
         print(f"Plot saved to {output_path}")
 
     plt.show()
-
 
 def print_benchmark_summary(config: Config, results: [BenchResults]):
     """
@@ -294,17 +295,227 @@ def print_benchmark_summary(config: Config, results: [BenchResults]):
             print(f"{result.sa_size:>8} | {time_min:>10.2f} | {mem_gb:>10.2f}")
         print()
 
+
+def plot_config_comparison(config1_results: [BenchResults], config2_results: [BenchResults], mode='prove',
+                           output_path: Path = None):
+    """
+    Creates side-by-side comparison plots of CPU time and memory usage between two configurations.
+    Only shows successful results for the specified mode (defaults to 'prove').
+
+    Args:
+        config1_results: List of BenchResults for first configuration
+        config2_results: List of BenchResults for second configuration (baseline)
+        mode: Analysis mode to compare ('prove' by default)
+        output_path: Optional path to save the plot
+    """
+    # Filter successful results for specified mode
+    results1 = sorted([r for r in config1_results if r.success and r.mode == mode],
+                      key=lambda x: x.sa_size)
+    results2 = sorted([r for r in config2_results if r.success and r.mode == mode],
+                      key=lambda x: x.sa_size)
+
+    if not results1 or not results2:
+        print(f"Insufficient data: Need results from both configurations for {mode} mode")
+        return
+
+    # Create figure with two subplots side by side
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=DOUBLE_PLOT_FIG_SIZE)
+
+    # Colors for consistent styling
+    config1_color = '#1f77b4'  # Blue
+    config2_color = '#ff7f0e'  # Orange
+
+    # --- CPU Time Comparison (Left Plot) ---
+    ax1.set_title('CPU Time Comparison', fontsize=14, pad=10)
+    ax1.set_xlabel('Systolic Array Size', fontsize=12)
+    ax1.set_ylabel('CPU Time (minutes)', fontsize=12)
+
+    # Plot config2 time
+    sizes2 = [r.sa_size for r in results2]
+    times2 = [r.time_seconds / 60.0 for r in results2]
+    ax1.plot(sizes2, times2, color=config2_color, marker='s',
+             label='Baseline', linestyle='--', linewidth=2)
+
+    # Plot config1 time
+    sizes1 = [r.sa_size for r in results1]
+    times1 = [r.time_seconds / 60.0 for r in results1]
+    ax1.plot(sizes1, times1, color=config1_color, marker='o',
+             label=results1[0].config.short_name, linestyle='-', linewidth=2)
+
+    ax1.grid(True, alpha=0.3)
+    ax1.legend(fontsize=11)
+    ax1.tick_params(labelsize=11)
+
+    # --- Memory Usage Comparison (Right Plot) ---
+    ax2.set_title('Memory Usage Comparison', fontsize=14, pad=10)
+    ax2.set_xlabel('Systolic Array Size', fontsize=12)
+    ax2.set_ylabel('Memory Usage (GB)', fontsize=12)
+
+    # Plot config2 memory
+    memory2 = [r.memory_megabytes / 1024.0 for r in results2]
+    ax2.plot(sizes2, memory2, color=config2_color, marker='s',
+             label='Baseline', linestyle='--', linewidth=2)
+
+    # Plot config1 memory
+    memory1 = [r.memory_megabytes / 1024.0 for r in results1]
+    ax2.plot(sizes1, memory1, color=config1_color, marker='o',
+             label=results1[0].config.short_name, linestyle='-', linewidth=2)
+
+    ax2.grid(True, alpha=0.3)
+    ax2.legend(fontsize=11)
+    ax2.tick_params(labelsize=11)
+
+    # Add overall title
+    fig.suptitle(f'{results1[0].config.short_name} Comparison ({mode})',
+                 fontsize=16, weight='bold')
+
+    # Adjust layout
+    plt.tight_layout()
+
+    # Save if output path provided
+    if output_path:
+        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        print(f"Plot saved to {output_path}")
+
+    plt.show()
+
+
+def plot_multi_config_comparison(configs_results: [[BenchResults]], baseline_results: [BenchResults],
+                                 mode='prove', output_path: Path = None):
+    """
+    Creates side-by-side comparison plots of CPU time and memory usage between multiple configurations
+    and a baseline. Only shows successful results for the specified mode.
+
+    Args:
+        configs_results: List of lists of BenchResults for each configuration to compare
+        baseline_results: List of BenchResults for baseline configuration
+        mode: Analysis mode to compare ('prove' by default)
+        output_path: Optional path to save the plot
+    """
+    # Filter successful results for specified mode for baseline
+    baseline = sorted([r for r in baseline_results if r.success and r.mode == mode],
+                      key=lambda x: x.sa_size)
+
+    # Filter successful results for specified mode for each config
+    configs = []
+    for config_results in configs_results:
+        filtered = sorted([r for r in config_results if r.success and r.mode == mode],
+                          key=lambda x: x.sa_size)
+        if filtered:
+            configs.append(filtered)
+
+    if not baseline or not configs:
+        print(f"Insufficient data: Need baseline and at least one config results for {mode} mode")
+        return
+
+    # Create figure with two subplots side by side
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=DOUBLE_PLOT_FIG_SIZE)
+
+    # Color palette for configurations (excluding baseline color)
+    # Using colorblind-friendly palette
+    config_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
+    baseline_color = '#7f7f7f'  # Gray for baseline
+
+    # --- CPU Time Comparison (Left Plot) ---
+    ax1.set_title('CPU Time Comparison', fontsize=14, pad=10)
+    ax1.set_xlabel('Systolic Array Size', fontsize=12)
+    ax1.set_ylabel('CPU Time (minutes)', fontsize=12)
+
+    # Plot baseline time
+    baseline_sizes = [r.sa_size for r in baseline]
+    baseline_times = [r.time_seconds / 60.0 for r in baseline]
+    ax1.plot(baseline_sizes, baseline_times, color=baseline_color, marker='s',
+             label='Baseline', linestyle='--', linewidth=2)
+
+    # Plot each config's time
+    for idx, config in enumerate(configs):
+        sizes = [r.sa_size for r in config]
+        times = [r.time_seconds / 60.0 for r in config]
+        ax1.plot(sizes, times, color=config_colors[idx % len(config_colors)],
+                 marker='o', label=config[0].config.short_name, linewidth=2)
+
+    ax1.grid(True, alpha=0.3)
+    ax1.legend(fontsize=10, loc='upper left')
+    ax1.tick_params(labelsize=11)
+
+    # --- Memory Usage Comparison (Right Plot) ---
+    ax2.set_title('Memory Usage Comparison', fontsize=14, pad=10)
+    ax2.set_xlabel('Systolic Array Size', fontsize=12)
+    ax2.set_ylabel('Memory Usage (GB)', fontsize=12)
+
+    # Plot baseline memory
+    baseline_memory = [r.memory_megabytes / 1024.0 for r in baseline]
+    ax2.plot(baseline_sizes, baseline_memory, color=baseline_color, marker='s',
+             label='Baseline', linestyle='--', linewidth=2)
+
+    # Plot each config's memory
+    for idx, config in enumerate(configs):
+        sizes = [r.sa_size for r in config]
+        memory = [r.memory_megabytes / 1024.0 for r in config]
+        ax2.plot(sizes, memory, color=config_colors[idx % len(config_colors)],
+                 marker='o', label=config[0].config.short_name, linewidth=2)
+
+    ax2.grid(True, alpha=0.3)
+    ax2.legend(fontsize=10, loc='upper left')
+    ax2.tick_params(labelsize=11)
+
+    # Add overall title
+    fig.suptitle(f'Multi-Configuration Comparison ({mode})',
+                 fontsize=16, weight='bold')
+
+    # Adjust layout
+    plt.tight_layout()
+
+    # Save if output path provided
+    if output_path:
+        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        print(f"Plot saved to {output_path}")
+
+    plt.show()
+
+
+# Example usage:
+# config1_results = load_results(CONFIG_NAMES[0])
+# config2_results = load_results(CONFIG_NAMES[1])
+# plot_config_comparison(config1_results, config2_results, mode='prove')
+
 # Convert the results.txt file to a CSV
 # convert_manual_results_txt_to_csv(RESULTS_DIR.parent / 'results.txt', 'FV_GEMM_Fixed_Weights_Each_Cycle')
 
-CONFIG_NAMES = [
-    Config('FV_GEMM_Fixed_Weights_Each_Cycle', 'Interface 1')
+INTERFACE_CONFIGS = [
+    Config('FV_GEMM_Fixed_Weights_Each_Cycle', 'Interface 1'),
 ]
 
-for cfg in CONFIG_NAMES:
+
+VERIF_CONFIGS = [
+    Config('FV_GEMM_FWEC_driver_verif1', 'Verif 1'),
+    Config('FV_GEMM_FWEC_driver_verif2', 'Verif 2'),
+    Config('FV_GEMM_FWEC_driver_verif3', 'Verif 3'),
+    Config('FV_GEMM_FWEC_driver_verif4', 'Verif 4'),
+]
+
+for cfg in INTERFACE_CONFIGS:
     res = load_results(cfg)
     print_benchmark_summary(cfg, res)
 
-    for mode in ['bmc', 'live', 'prove']:
-        plot_performance_metrics(res, mode=mode)
+    # for mode in ['bmc', 'live', 'prove']:
+    #     plot_performance_metrics(res, mode=mode)
+
     plot_bmc_prove_mode_comparison(res)
+
+#########################################
+# PLOT ADDITIONAL ASSERTIONS COMPARISON
+#########################################
+
+interface1_cfg = INTERFACE_CONFIGS[0]
+interface1_res = load_results(interface1_cfg)
+
+comparison_res = []
+
+for cfg in VERIF_CONFIGS:
+    res = load_results(cfg)
+    plot_config_comparison(res, interface1_res, mode='prove')
+    print_benchmark_summary(cfg, res)
+    comparison_res.append(res)
+
+plot_multi_config_comparison(comparison_res, interface1_res)
