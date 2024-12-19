@@ -484,6 +484,8 @@ def plot_multi_config_comparison(configs_results: [[BenchResults]], baseline_res
 
 INTERFACE_CONFIGS = [
     Config('FV_GEMM_Fixed_Weights_Each_Cycle', 'Interface 1'),
+    Config('FV_GEMM_Fixed_Weights_driver', 'Interface 2'),
+    Config('FV_GEMM_driver', 'Interface 3')
 ]
 
 
@@ -494,14 +496,24 @@ VERIF_CONFIGS = [
     Config('FV_GEMM_FWEC_driver_verif4', 'Verif 4'),
 ]
 
-for cfg in INTERFACE_CONFIGS:
+#########################################
+# PLOT BMC VS PROOF FOR INTERFACE 1
+#########################################
+
+interface1_cfg = INTERFACE_CONFIGS[0]
+interface1_res = load_results(interface1_cfg)
+
+print_benchmark_summary(interface1_cfg, interface1_res)
+plot_bmc_prove_mode_comparison(interface1_res)
+
+#########################################
+# PLOT COMPARISON OF OTHER INTERFACES
+#########################################
+
+for cfg in INTERFACE_CONFIGS[1:]:
     res = load_results(cfg)
     print_benchmark_summary(cfg, res)
-
-    # for mode in ['bmc', 'live', 'prove']:
-    #     plot_performance_metrics(res, mode=mode)
-
-    plot_bmc_prove_mode_comparison(res)
+    plot_config_comparison(res, interface1_res, mode='bmc')
 
 #########################################
 # PLOT ADDITIONAL ASSERTIONS COMPARISON
