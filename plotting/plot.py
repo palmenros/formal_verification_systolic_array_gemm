@@ -6,6 +6,7 @@ import csv
 import re
 
 RESULTS_DIR = Path(__file__).parent.parent / 'systolic_array' / 'FV' / 'benchmark_output'
+IMAGES_DIR = Path(__file__).parent / 'img'
 
 # Set global font sizes
 plt.rcParams.update({
@@ -381,7 +382,7 @@ def plot_config_comparison(config1_results: [BenchResults], config2_results: [Be
 
 
 def plot_multi_config_comparison(configs_results: [[BenchResults]], baseline_results: [BenchResults],
-                                 mode='prove', output_path: Path = None):
+                                 mode='prove', title_label = 'Multi-Configuration', output_path: Path = None):
     """
     Creates side-by-side comparison plots of CPU time and memory usage between multiple configurations
     and a baseline. Only shows successful results for the specified mode.
@@ -460,7 +461,7 @@ def plot_multi_config_comparison(configs_results: [[BenchResults]], baseline_res
     ax2.tick_params(labelsize=11)
 
     # Add overall title
-    fig.suptitle(f'Multi-Configuration Comparison ({mode})',
+    fig.suptitle(f'{title_label} Comparison ({mode})',
                  fontsize=16, weight='bold')
 
     # Adjust layout
@@ -472,7 +473,6 @@ def plot_multi_config_comparison(configs_results: [[BenchResults]], baseline_res
         print(f"Plot saved to {output_path}")
 
     plt.show()
-
 
 # Example usage:
 # config1_results = load_results(CONFIG_NAMES[0])
@@ -490,10 +490,10 @@ INTERFACE_CONFIGS = [
 
 
 VERIF_CONFIGS = [
-    Config('FV_GEMM_FWEC_driver_verif1', 'Verif 1'),
-    Config('FV_GEMM_FWEC_driver_verif2', 'Verif 2'),
-    Config('FV_GEMM_FWEC_driver_verif3', 'Verif 3'),
-    Config('FV_GEMM_FWEC_driver_verif4', 'Verif 4'),
+    Config('FV_GEMM_FWEC_driver_verif1', 'Assertion 1'),
+    Config('FV_GEMM_FWEC_driver_verif3', 'Assertion 2'),
+    # Config('FV_GEMM_FWEC_driver_verif4', 'Assertion 3'),
+    Config('FV_GEMM_FWEC_driver_verif2', 'Assertions 1+2'),
 ]
 
 #########################################
@@ -504,16 +504,21 @@ interface1_cfg = INTERFACE_CONFIGS[0]
 interface1_res = load_results(interface1_cfg)
 
 print_benchmark_summary(interface1_cfg, interface1_res)
-plot_bmc_prove_mode_comparison(interface1_res)
+plot_bmc_prove_mode_comparison(interface1_res, output_path= IMAGES_DIR / 'interface1_prove_vs_bmc.pdf')
 
 #########################################
 # PLOT COMPARISON OF OTHER INTERFACES
 #########################################
 
-for cfg in INTERFACE_CONFIGS[1:]:
+other_interfaces_res = []
+
+for i, cfg in enumerate(INTERFACE_CONFIGS[1:]):
     res = load_results(cfg)
     print_benchmark_summary(cfg, res)
-    plot_config_comparison(res, interface1_res, mode='bmc')
+    plot_config_comparison(res, interface1_res, mode='bmc', output_path= IMAGES_DIR / f'interface{2+i}_bmc_vs_baseline.pdf')
+    other_interfaces_res.append(res)
+
+plot_multi_config_comparison(other_interfaces_res, interface1_res, mode='bmc', title_label='Interface', output_path=IMAGES_DIR / 'interface_comparison.pdf')
 
 #########################################
 # PLOT ADDITIONAL ASSERTIONS COMPARISON
@@ -526,8 +531,8 @@ comparison_res = []
 
 for cfg in VERIF_CONFIGS:
     res = load_results(cfg)
-    plot_config_comparison(res, interface1_res, mode='prove')
+    plot_config_comparison(res, interface1_res, mode='prove', output_path=IMAGES_DIR / f'{cfg.short_name.lower().replace(' ', '_').replace('+', 'plus')}.pdf')
     print_benchmark_summary(cfg, res)
     comparison_res.append(res)
 
-plot_multi_config_comparison(comparison_res, interface1_res)
+plot_multi_config_comparison(comparison_res, interface1_res, mode='prove', title_label='Assertion', output_path=IMAGES_DIR / 'assertion_comparison.pdf')
