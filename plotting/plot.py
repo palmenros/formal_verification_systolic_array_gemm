@@ -10,12 +10,12 @@ IMAGES_DIR = Path(__file__).parent / 'img'
 
 # Set global font sizes
 plt.rcParams.update({
-    'font.size': 12,
-    'axes.titlesize': 14,
-    'axes.labelsize': 12,
-    'xtick.labelsize': 11,
-    'ytick.labelsize': 11,
-    'legend.fontsize': 11,
+    'font.size': 16,
+    'axes.titlesize': 18,
+    'axes.labelsize': 17,
+    'xtick.labelsize': 14,
+    'ytick.labelsize': 14,
+    'legend.fontsize': 15,
     'figure.titlesize': 16
 })
 
@@ -327,9 +327,9 @@ def plot_config_comparison(config1_results: [BenchResults], config2_results: [Be
     config2_color = '#ff7f0e'  # Orange
 
     # --- CPU Time Comparison (Left Plot) ---
-    ax1.set_title('CPU Time Comparison', fontsize=14, pad=10)
-    ax1.set_xlabel('Systolic Array Size', fontsize=12)
-    ax1.set_ylabel('CPU Time (minutes)', fontsize=12)
+    ax1.set_title('CPU Time Comparison', pad=10)
+    ax1.set_xlabel('Systolic Array Size')
+    ax1.set_ylabel('CPU Time (minutes)')
 
     # Plot config2 time
     sizes2 = [r.sa_size for r in results2]
@@ -344,13 +344,12 @@ def plot_config_comparison(config1_results: [BenchResults], config2_results: [Be
              label=results1[0].config.short_name, linestyle='-', linewidth=2)
 
     ax1.grid(True, alpha=0.3)
-    ax1.legend(fontsize=11)
-    ax1.tick_params(labelsize=11)
+    ax1.legend()
 
     # --- Memory Usage Comparison (Right Plot) ---
-    ax2.set_title('Memory Usage Comparison', fontsize=14, pad=10)
-    ax2.set_xlabel('Systolic Array Size', fontsize=12)
-    ax2.set_ylabel('Memory Usage (GB)', fontsize=12)
+    ax2.set_title('Memory Usage Comparison', pad=10)
+    ax2.set_xlabel('Systolic Array Size')
+    ax2.set_ylabel('Memory Usage (GB)')
 
     # Plot config2 memory
     memory2 = [r.memory_megabytes / 1024.0 for r in results2]
@@ -363,12 +362,11 @@ def plot_config_comparison(config1_results: [BenchResults], config2_results: [Be
              label=results1[0].config.short_name, linestyle='-', linewidth=2)
 
     ax2.grid(True, alpha=0.3)
-    ax2.legend(fontsize=11)
-    ax2.tick_params(labelsize=11)
+    ax2.legend()
 
     # Add overall title
     fig.suptitle(f'{results1[0].config.short_name} Comparison ({mode})',
-                 fontsize=16, weight='bold')
+                 weight='bold')
 
     # Adjust layout
     plt.tight_layout()
@@ -382,7 +380,7 @@ def plot_config_comparison(config1_results: [BenchResults], config2_results: [Be
 
 
 def plot_multi_config_comparison(configs_results: [[BenchResults]], baseline_results: [BenchResults],
-                                 mode='prove', title_label = 'Multi-Configuration', output_path: Path = None):
+                                 mode='prove', title_label = 'Multi-Configuration', output_path: Path = None, legend_label_size=None):
     """
     Creates side-by-side comparison plots of CPU time and memory usage between multiple configurations
     and a baseline. Only shows successful results for the specified mode.
@@ -418,9 +416,9 @@ def plot_multi_config_comparison(configs_results: [[BenchResults]], baseline_res
     baseline_color = '#7f7f7f'  # Gray for baseline
 
     # --- CPU Time Comparison (Left Plot) ---
-    ax1.set_title('CPU Time Comparison', fontsize=14, pad=10)
-    ax1.set_xlabel('Systolic Array Size', fontsize=12)
-    ax1.set_ylabel('CPU Time (minutes)', fontsize=12)
+    ax1.set_title('CPU Time Comparison', pad=10)
+    ax1.set_xlabel('Systolic Array Size')
+    ax1.set_ylabel('CPU Time (minutes)')
 
     # Plot baseline time
     baseline_sizes = [r.sa_size for r in baseline]
@@ -436,13 +434,16 @@ def plot_multi_config_comparison(configs_results: [[BenchResults]], baseline_res
                  marker='o', label=config[0].config.short_name, linewidth=2)
 
     ax1.grid(True, alpha=0.3)
-    ax1.legend(fontsize=10, loc='upper left')
-    ax1.tick_params(labelsize=11)
+
+    if legend_label_size is None:
+        ax1.legend(loc='upper left')
+    else:
+        ax1.legend(loc='upper left', fontsize=legend_label_size)
 
     # --- Memory Usage Comparison (Right Plot) ---
-    ax2.set_title('Memory Usage Comparison', fontsize=14, pad=10)
-    ax2.set_xlabel('Systolic Array Size', fontsize=12)
-    ax2.set_ylabel('Memory Usage (GB)', fontsize=12)
+    ax2.set_title('Memory Usage Comparison', pad=10)
+    ax2.set_xlabel('Systolic Array Size')
+    ax2.set_ylabel('Memory Usage (GB)')
 
     # Plot baseline memory
     baseline_memory = [r.memory_megabytes / 1024.0 for r in baseline]
@@ -457,12 +458,15 @@ def plot_multi_config_comparison(configs_results: [[BenchResults]], baseline_res
                  marker='o', label=config[0].config.short_name, linewidth=2)
 
     ax2.grid(True, alpha=0.3)
-    ax2.legend(fontsize=10, loc='upper left')
-    ax2.tick_params(labelsize=11)
+
+    if legend_label_size is None:
+        ax2.legend(loc='upper left')
+    else:
+        ax2.legend(loc='upper left', fontsize=legend_label_size)
 
     # Add overall title
     fig.suptitle(f'{title_label} Comparison ({mode})',
-                 fontsize=16, weight='bold')
+                 weight='bold')
 
     # Adjust layout
     plt.tight_layout()
@@ -518,7 +522,7 @@ for i, cfg in enumerate(INTERFACE_CONFIGS[1:]):
     plot_config_comparison(res, interface1_res, mode='bmc', output_path= IMAGES_DIR / f'interface{2+i}_bmc_vs_baseline.pdf')
     other_interfaces_res.append(res)
 
-plot_multi_config_comparison(other_interfaces_res, interface1_res, mode='bmc', title_label='Interface', output_path=IMAGES_DIR / 'interface_comparison.pdf')
+plot_multi_config_comparison(other_interfaces_res, interface1_res, mode='bmc', title_label='Interface', output_path=IMAGES_DIR / 'interface_comparison.pdf', legend_label_size=14)
 
 #########################################
 # PLOT ADDITIONAL ASSERTIONS COMPARISON
@@ -535,4 +539,4 @@ for cfg in VERIF_CONFIGS:
     print_benchmark_summary(cfg, res)
     comparison_res.append(res)
 
-plot_multi_config_comparison(comparison_res, interface1_res, mode='prove', title_label='Assertion', output_path=IMAGES_DIR / 'assertion_comparison.pdf')
+plot_multi_config_comparison(comparison_res, interface1_res, mode='prove', title_label='Assertion', output_path=IMAGES_DIR / 'assertion_comparison.pdf', legend_label_size=13)
