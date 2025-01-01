@@ -1,5 +1,0 @@
-Elapsed clock time [H:MM:SS (secs)]: 0:00:00 (0)
-Elapsed process time [H:MM:SS (secs)]: 0:00:00 (0)
-engine_0 (smtbmc) returned FAIL
-counterexample trace: engine_0/trace.vcd
-  failed assertion demo_01_impl._witness_.assert_auto_verificsva_cc_1732_import_16 at demo_01_impl.sv:15.2-15.28 in step 19

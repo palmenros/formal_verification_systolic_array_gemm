@@ -1,14 +1,14 @@
 # Formal verification of a GEMM Systolic Array
 
-This project contains a parameterized SystemVerilog RTL implementation for a INT8 Systolic Array computing General Matrix-Matrix Multiply that has been formally verified to be equivalent with the mathematical triple-loop definition using SymbiYosys and SystemVerilog Assertions.
+This project contains a parameterized SystemVerilog RTL implementation for an INT8 Systolic Array computing General Matrix-Matrix Multiply that has been formally verified to be equivalent with the mathematical triple-loop definition using SymbiYosys and SystemVerilog Assertions.
 
-Several I/O interfaces have been implemented and compared. All of them input a row and output a row at the same time. The difference between implementations lies in the programmability of weights 
+Several I/O interfaces have been implemented and compared. All of them input a row and output a row at the same time. The difference between implementations lies in the programmability of weights and whether the input is stallable:
 
-- Interface 1 (`GEMM_Fixed_Weights_Each_Cycle.sv`): The weights are fixed and cannot change over time, but they are arbitrary (modeled as `(* anyconst *)`), and every cycle a new row of the input matrix is provided (there's no stalling capabililty).
+- Interface 1 (`GEMM_Fixed_Weights_Each_Cycle.sv`): The weights are fixed and cannot change over time, but they are arbitrary (modeled as `(* anyconst *)`), and every cycle a new row of the input matrix is provided (there's no stalling capability).
 - Interface 2 (`GEMM_Fixed_Weights.sv`): The weights are still fixed and arbitrary, but the input can be stalled. A new input row is only fed when `should_advance_computation` is true.
 - Interface 3 (`GEMM.sv`): Completely programmable interface. Each clock cycle, a different command can be performed: `CMD_WRITE_WEIGHTS` to write new weights into the systolic array, `CMD_STREAM` to perform a computation with a new input matrix row or `CMD_NONE` to do nothing.
 
-Additionally, several additional assertions have been added to try to speed-up the formal verification tools, and all configurations have been thoroughly benchmarked to understand the limitations of current formal verification tools when managing complex dataflow circuits and to evaluate the impact of I/O interfaces on verification performance.
+Additionally, several additional handcrafted assertions have been added to try to speed-up the formal verification tools, and all configurations have been thoroughly benchmarked to understand the limitations of current formal verification tools when managing complex dataflow circuits and to evaluate the impact of I/O interfaces on verification performance.
 
 ### Folder Structure
 
@@ -19,7 +19,7 @@ Additionally, several additional assertions have been added to try to speed-up t
     - Several formal verification harnesses based on System Verilog Assertions (almost all `.sv` files), such as `FV_GEMM_Fixed_Weights_Each_Cycle_driver.sv`.
     - SymbiYosys `.sby` files for each configuration. They are ready to be run using SymbiYosys to formally verify the systolic array.
     - `FV_Matrix_Playground.sv`, a formal verification harness that uses `cover` properties in an interesting way to perform matrix inversion and LU decomposition.
-    - `run_benchmarks.py`, a Python tool to automatically run benchmarks and store the results in text files. It uses `.sby.tpl` template files to dynamically generate the apropriate `.sby` file for a given configuration and run SymbiYosys without manual intervention. 
+    - `run_benchmarks.py`, a Python tool to automatically run benchmarks and store the results in text files. It uses `.sby.tpl` template files to dynamically generate the appropriate `.sby` file for a given configuration and run SymbiYosys without manual intervention. 
     - `benchmark_output`, a folder containing the output of running the benchmark tool.
     - `.gtkw` files with waveform configurations for the GTKWave. Useful to examine `.vcd` files output by `cover` or failed assertions.
 - `plotting` contains a Python script to replicate all the plots that appear in the presentation and report.
