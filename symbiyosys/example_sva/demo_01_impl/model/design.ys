@@ -1,0 +1,10 @@
+# running in demo_01_impl/src/
+read -verific
+read -formal seq.sv
+read -formal demo_01_impl.sv
+prep -top demo_01_impl
+
+hierarchy -smtcheck
+rename -witness
+write_jny -no-connections ../model/design.json
+write_rtlil ../model/design.il

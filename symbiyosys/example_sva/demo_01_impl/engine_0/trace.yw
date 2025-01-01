@@ -1,0 +1,35 @@
+{
+  "format": "Yosys Witness Trace",
+  "generator": "smtbmc",
+  "clocks": [
+    {"path": ["\\clock"], "edge": "posedge", "offset": 0}
+  ],
+  "signals": [
+    {"path": ["\\clock"], "width": 1, "offset": 0, "init_only": false},
+    {"path": ["\\seq_a", "\\_witness_", "\\anyseq_auto_setundef_cc_533_execute_400"], "width": 1, "offset": 0, "init_only": false},
+    {"path": ["\\seq_b", "\\_witness_", "\\anyseq_auto_setundef_cc_533_execute_404"], "width": 1, "offset": 0, "init_only": false},
+    {"path": ["\\seq_r", "\\_witness_", "\\anyseq_auto_setundef_cc_533_execute_396"], "width": 1, "offset": 0, "init_only": false}
+  ],
+  "steps": [
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"},
+    {"bits": "0000"}
+  ]
+}
