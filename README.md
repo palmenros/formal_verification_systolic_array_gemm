@@ -26,7 +26,7 @@ Additionally, several additional handcrafted assertions have been added to try t
 
 ### How to run and verify
 
-First of all, [Tabby Cad Suite](https://www.yosyshq.com/tabby-cad-datasheet) needs to be installed and have a valid license, to be able to use the Verific parser for SystemVerilog Assertions with SymbiYosys. At the time of writing this document, YosysHQ offers evaluation licenses on request.
+First of all, [Tabby Cad Suite](https://www.yosyshq.com/tabby-cad-datasheet) needs to be installed and have a valid license, to be able to use the Verific parser for SystemVerilog Assertions with SymbiYosys. At the time of writing this document, YosysHQ offers evaluation licenses upon request.
 
 Once installed, and if `PATH` variables are correctly configured, the script `systolic_array/FV/run_benchmarks.py` can be executed to automatically run all benchmarks.
 
