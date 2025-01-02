@@ -68,7 +68,7 @@ function automatic logic golden_model_matrix_vector_multiply_check (
     // First compute expected result
     for (int i = 0; i < SA_SIZE; i++) begin
         expected[i] = '0;
-        // Compute dot product for each row
+        // Compute dot product 
         for (int j = 0; j < SA_SIZE; j++) begin
             expected[i] += input_snapshot[input_index][j] * weights[j][i];
         end

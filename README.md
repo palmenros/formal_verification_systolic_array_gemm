@@ -10,6 +10,10 @@ Several I/O interfaces have been implemented and compared. All of them input a r
 
 Additionally, several additional handcrafted assertions have been added to try to speed up the formal verification tools, and all configurations have been thoroughly benchmarked to understand the limitations of current formal verification tools when managing complex dataflow circuits and to evaluate the impact of I/O interfaces on verification performance.
 
+### Report and presentation
+
+An in-depth report of the project is available in `Report.pdf`. Additionally, a presentation of the project is also available in `Presentation.pdf`.
+
 ### Folder Structure
 
 - `systolic_array/RTL` contains the parameterizable RTL implementation of the Systolic Array and the different interfaces.
@@ -21,12 +25,12 @@ Additionally, several additional handcrafted assertions have been added to try t
     - `FV_Matrix_Playground.sv`, a formal verification harness that uses `cover` properties in an interesting way to perform matrix inversion and LU decomposition.
     - `run_benchmarks.py`, a Python tool to automatically run benchmarks and store the results in text files. It uses `.sby.tpl` template files to dynamically generate the appropriate `.sby` file for a given configuration and run SymbiYosys without manual intervention. 
     - `benchmark_output`, a folder containing the output of running the benchmark tool.
-    - `.gtkw` files with waveform configurations for the GTKWave. These are useful to examine `.vcd` files output by `cover` or failed assertions.
+    - `.gtkw` files with waveform configurations for GTKWave. These are useful to examine `.vcd` files output by `cover` or failed assertions.
 - `plotting` contains a Python script to replicate all the plots that appear in the presentation and report.
 
 ### How to run and verify
 
-First of all, [Tabby Cad Suite](https://www.yosyshq.com/tabby-cad-datasheet) needs to be installed and have a valid license, to be able to use the Verific parser for SystemVerilog Assertions with SymbiYosys. At the time of writing this document, YosysHQ offers evaluation licenses upon request.
+First of all, [Tabby Cad Suite](https://www.yosyshq.com/tabby-cad-datasheet) needs to be installed. A valid license is also required, to be able to use the Verific parser for SystemVerilog Assertions with SymbiYosys. At the time of writing this document, YosysHQ offers evaluation licenses upon request.
 
 Once installed, and if `PATH` variables are correctly configured, the script `systolic_array/FV/run_benchmarks.py` can be executed to automatically run all benchmarks.
 
@@ -41,7 +45,3 @@ For example, the following command runs SymbiYosys in `bmc` mode for Interface 1
 ```bash
 sby --prefix symbiyosys_FV_GEMM_Fixed_Weights_Each_Cycle_driver -f FV_GEMM_Fixed_Weights_Each_Cycle_driver.sby bmc
 ```
-
-### Report and presentation
-
-TODO: Upload and describe where to find them.

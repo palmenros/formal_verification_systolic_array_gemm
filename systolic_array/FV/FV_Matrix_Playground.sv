@@ -25,7 +25,7 @@ default clocking cb @(posedge clk); endclocking
 always_comb begin
     for (int i = 0; i < SA_SIZE; i++) begin
         out[i] = '0;
-        // Compute dot product for each row
+        // Compute dot product 
         for (int j = 0; j < SA_SIZE; j++) begin
             out[i] += inputs[j] * weights[j][i];
         end
